@@ -343,6 +343,7 @@
                     <div class="col-span-full text-center py-32 glass rounded-3xl border-dashed">
                         <i data-lucide="alert-circle" class="h-12 w-12 text-red-500 mx-auto mb-4"></i>
                         <h2 class="text-xl font-bold mb-2">Gagal Scraping Otomatis</h2>
+                        <p class="text-rose-400 font-mono text-xs mb-4 bg-rose-500/10 py-2 px-4 rounded-lg inline-block border border-rose-500/20">${e.message}</p>
                         <p class="text-slate-400 max-w-md mx-auto">Pastikan kredensial <b>KULINO_USERNAME</b> dan <b>KULINO_PASSWORD</b> sudah diset di file <b>.env</b> (Lokal) atau <b>Environment Variables</b> (Vercel).</p>
                         <p class="text-slate-500 text-xs mt-4">Jika baru pertama kali dijalankan, proses ini butuh waktu beberapa detik untuk login.</p>
                         <button onclick="loadData()" class="mt-6 px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all font-medium text-sm">
