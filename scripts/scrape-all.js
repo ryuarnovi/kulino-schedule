@@ -12,19 +12,26 @@ async function scrapeDeep() {
         process.exit(1);
     }
 
-    console.log('🚀 Memulai Deep Scraper (Inspirasi: Tengga Engine)...');
-    
-    // 1. Load existing data to sync / skip
-    const dataPath = path.join(__dirname, '../public/deadlines.json');
-    let existingData = [];
-    if (fs.existsSync(dataPath)) {
+    console.log('🚀 Tenggat Dynamic Scraper (History & Pagination) dimulai...');
+
+    // 1. BACA DATA LAMA (HISTORY)
+    let existingTasks = [];
+    const dataFile = path.join(__dirname, '../public/deadlines.json');
+
+    if (fs.existsSync(dataFile)) {
         try {
-            existingData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-            console.log(`📁 Database lama ditemukan: ${existingData.length} entri.`);
-        } catch (e) {
-            console.warn('⚠️ Gagal baca database lama.');
+            const rawData = fs.readFileSync(dataFile, 'utf-8');
+            existingTasks = JSON.parse(rawData);
+            console.log(`📁 Menemukan ${existingTasks.length} tugas lama di database.`);
+        } catch (err) {
+            console.log('⚠️ Gagal membaca data.json lama, membuat ulang...');
         }
     }
+
+    const taskHistoryMap = new Map();
+    existingTasks.forEach((task) => {
+        if (task.id) taskHistoryMap.set(task.id, task);
+    });
 
     const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({
@@ -33,138 +40,177 @@ async function scrapeDeep() {
     const page = await context.newPage();
 
     try {
-        // 1. Login
-        console.log('🔑 Logging in...');
-        await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'domcontentloaded' });
+        console.log('🌐 Membuka halaman login...');
+        await page.goto('https://kulino.dinus.ac.id/login/index.php');
         await page.fill('#username', username);
         await page.fill('#password', password);
-        await Promise.all([
-            page.waitForURL('**/my/**', { timeout: 30000, waitUntil: 'domcontentloaded' }),
-            page.click('#loginbtn'),
-        ]);
+        await page.click('#loginbtn');
 
-        // 2. Calendar Month View
-        console.log('📅 Navigasi ke Kalender (Month View)...');
+        console.log('📅 Pindah ke Kalender...');
+        await page.waitForTimeout(2000);
         await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=month', { waitUntil: 'domcontentloaded' });
-        
-        let allTasks = [];
-        let monthCount = 0;
-        const MAX_MONTHS = 4;
+        await page.waitForSelector('.calendartable', { timeout: 15000 });
 
-        while (monthCount < MAX_MONTHS) {
-            console.log(`🔍 Scraping Bulan ke-${monthCount + 1}...`);
-            await page.waitForSelector('.calendartable', { timeout: 10000 });
-            
-            const eventLinks = await page.locator('a[data-action="view-event"]');
-            const count = await eventLinks.count();
+        // --- 2. AMBIL LIST TUGAS DENGAN DYNAMIC PAGINATION ---
+        let currentTasks = [];
+        let monthsScraped = 0;
+        const MIN_MONTHS = 2; // Minimal ambil 2 bulan
+        const MAX_MONTHS = 5; // Maksimal ambil 5 bulan
+        const TARGET_TASKS = 20; // Target standar jumlah tugas
 
-            for (let i = 0; i < count; i++) {
-                const ev = eventLinks.nth(i);
+        while (monthsScraped < MAX_MONTHS) {
+            console.log(`\n🔍 Scraping Kalender Bulan ke-${monthsScraped + 1}...`);
+
+            // 🛡️ TUNGGU OVERLAY LOADING MOODLE HILANG DULU SEBELUM MULAI
+            await page.waitForSelector('.overlay-icon-container', { state: 'hidden', timeout: 10000 }).catch(() => {});
+
+            // 🎯 PENGGUNAAN LOCATOR
+            const eventsLocator = page.locator('a[data-action="view-event"]');
+            const eventCount = await eventsLocator.count();
+
+            for (let j = 0; j < eventCount; j++) {
+                const ev = eventsLocator.nth(j);
                 const eventId = await ev.getAttribute('data-event-id');
-                const rawTitle = await ev.getAttribute('title');
-                const cleanTitle = (rawTitle || '').replace(' is due', '').replace(' opens', '').trim();
-                
-                // Open Modal to get Course Name & Real Link
+                if (!eventId) continue;
+
+                // Bersihkan title
+                const rawTitle = (await ev.getAttribute('title')) || '';
+                const cleanTitle = rawTitle.replace(' is due', '').replace(' opens', '').trim();
+
+                // Ambil timestamp dari parent td.day
+                const timestampMs = await ev.evaluate((el) => {
+                    const td = el.closest('td.day');
+                    const ts = td ? td.getAttribute('data-day-timestamp') : null;
+                    return ts ? parseInt(ts) * 1000 : null;
+                });
+
+                // 🖱️ BUKA MODAL
                 await ev.click({ force: true });
                 await page.waitForSelector('.modal-content', { state: 'visible', timeout: 5000 }).catch(() => {});
 
+                // 🎯 AMBIL NAMA MATKUL DARI MODAL
                 const modalData = await page.evaluate(() => {
                     const courseEl = document.querySelector('.modal-content a[href*="course/view.php?id="]');
-                    let courseName = courseEl?.textContent?.trim() || 'Umum';
-                    courseName = courseName.replace(/^\[\d+\]\s*/, '');
+                    let courseName = courseEl?.textContent?.trim() || '';
+                    courseName = courseName.replace(/^\[\d+\]\s*/, ''); // Hapus angka kode matkul
 
                     const activityBtn = document.querySelector('.modal-content a.btn-primary');
                     const activityLink = activityBtn ? activityBtn.getAttribute('href') : null;
+
                     return { courseName, activityLink };
                 });
 
-                // Close Modal
+                // ❌ TUTUP MODAL
                 await page.keyboard.press('Escape');
                 await page.waitForSelector('.modal-content', { state: 'hidden', timeout: 5000 }).catch(() => {});
+                await page.waitForTimeout(300);
 
-                if (modalData.activityLink) {
-                    allTasks.push({
+                // Masukkan ke array jika unik
+                const isDuplicate = currentTasks.some((existing) => existing.id === eventId);
+                if (!isDuplicate) {
+                    currentTasks.push({
                         id: eventId,
                         title: cleanTitle,
                         course: modalData.courseName,
-                        url: modalData.activityLink,
+                        deadlineTimestamp: timestampMs,
+                        url: modalData.activityLink || (await ev.getAttribute('href')),
                         scrapedAt: new Date().toISOString()
                     });
                 }
             }
 
-            // Next Month
-            monthCount++;
-            if (monthCount < MAX_MONTHS) {
-                const nextBtn = page.locator('.arrow_link.next');
-                if (await nextBtn.count() > 0) {
-                    await nextBtn.click({ force: true });
-                    // Wait for Moodle loading overlay
-                    await page.waitForSelector('.overlay-icon-container', { state: 'visible', timeout: 3000 }).catch(() => {});
-                    await page.waitForSelector('.overlay-icon-container', { state: 'hidden', timeout: 10000 }).catch(() => {});
+            monthsScraped++;
+            console.log(`📊 Terkumpul sementara: ${currentTasks.length} tugas unik.`);
+
+            // CEK KONDISI BERHENTI
+            if (monthsScraped >= MIN_MONTHS && currentTasks.length >= TARGET_TASKS) {
+                console.log(`✅ Sudah melewati ${MIN_MONTHS} bulan dan mencapai limit. Stop pindah bulan.`);
+                break;
+            }
+
+            // PINDAH KE BULAN BERIKUTNYA
+            if (monthsScraped < MAX_MONTHS) {
+                const nextButton = page.locator('.arrow_link.next');
+                if ((await nextButton.count()) > 0) {
+                    await nextButton.click({ force: true });
+                    console.log('⏳ Menunggu kalender bulan berikutnya dimuat...');
+                    await page.waitForSelector('.overlay-icon-container', { state: 'visible', timeout: 5000 }).catch(() => {});
+                    await page.waitForSelector('.overlay-icon-container', { state: 'hidden', timeout: 15000 }).catch(() => {});
                 } else break;
             }
         }
 
-        console.log(`✅ Kalender selesai. Ditemukan ${allTasks.length} tugas. Memulai inspeksi detail...`);
+        console.log(`\n✅ Total Kalender Selesai. Siap inspeksi detail ${currentTasks.length} tugas...`);
 
-        // 3. Deep Detail Scraping
-        for (let i = 0; i < allTasks.length; i++) {
-            const task = allTasks[i];
-            
-            // Cek history
-            const history = existingData.find(h => h.url === task.url || h.id === task.id);
-            if (history && history.isSubmitted) {
-                console.log(`⏩ [${i+1}/${allTasks.length}] Skip (Sudah dikerjakan): ${task.title}`);
-                allTasks[i] = history;
+        // --- 3. DEEP SCRAPING DENGAN LOGIKA SKIP ---
+        for (let i = 0; i < currentTasks.length; i++) {
+            const task = currentTasks[i];
+            if (!task || !task.id || !task.url) continue;
+
+            const oldTask = taskHistoryMap.get(task.id);
+
+            // HISTORY: Kalau sudah submit sebelumnya, skip
+            if (oldTask && oldTask.isSubmitted) {
+                console.log(`⏩ [${i + 1}/${currentTasks.length}] SKIP: ${task.title} (Sudah dikumpulkan)`);
+                currentTasks[i] = oldTask;
+                taskHistoryMap.delete(task.id);
                 continue;
             }
 
-            console.log(`➡️ [${i+1}/${allTasks.length}] Inspeksi: ${task.title}`);
+            console.log(`➡️ [${i + 1}/${currentTasks.length}] SCRAPE: ${task.title}`);
+
             try {
                 await page.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-                
-                const details = await page.evaluate(() => {
-                    let deadline = '';
-                    let isSubmitted = false;
+
+                const detail = await page.evaluate(() => {
                     let description = document.querySelector('#intro .no-overflow')?.textContent?.trim() || '';
+                    let isSubmitted = false;
+                    let deadline = '';
 
-                    // Get Dates
-                    const dateElements = document.querySelectorAll('[data-region="activity-dates"] > div');
-                    dateElements.forEach(div => {
-                        const txt = div.textContent.trim();
-                        if (txt.includes('Due:') || txt.includes('Closes:')) deadline = txt.replace(/Due:|Closes:/, '').trim();
+                    const dateDivs = document.querySelectorAll('[data-region="activity-dates"] > div');
+                    dateDivs.forEach((div) => {
+                        const text = div.textContent?.trim() || '';
+                        if (text.includes('Opened:')) {}
+                        else if (text.includes('Due:') || text.includes('Closes:')) deadline = text.replace(/Due:|Closes:/, '').trim();
                     });
 
-                    // Get Status
-                    const rows = document.querySelectorAll('.submissionstatustable tr');
-                    rows.forEach(row => {
-                        const th = row.querySelector('th')?.textContent?.toLowerCase() || '';
-                        const td = row.querySelector('td')?.textContent?.toLowerCase() || '';
-                        if (th.includes('status') && (td.includes('submitted') || td.includes('dikumpulkan'))) isSubmitted = true;
+                    const tableRows = document.querySelectorAll('.submissionstatustable tr');
+                    tableRows.forEach((row) => {
+                        const th = row.querySelector('th')?.textContent?.trim() || '';
+                        const td = row.querySelector('td')?.textContent?.trim() || '';
+                        if (th.includes('Submission status') || th.includes('Status pengajuan')) {
+                            if (td.toLowerCase().includes('submitted') || td.toLowerCase().includes('dikumpulkan')) {
+                                isSubmitted = true;
+                            }
+                        }
                     });
 
-                    return { deadline, isSubmitted, description };
+                    return { description, isSubmitted, deadline };
                 });
 
-                task.deadline = details.deadline;
-                task.isSubmitted = details.isSubmitted;
-                task.description = details.description;
-                if (task.deadline) {
-                    const dt = new Date(task.deadline);
+                task.description = detail.description;
+                task.isSubmitted = detail.isSubmitted;
+                if (detail.deadline) {
+                    task.deadline = detail.deadline;
+                    const dt = new Date(detail.deadline);
                     if (!isNaN(dt.getTime())) task.deadlineTimestamp = dt.getTime();
                 }
+
+                taskHistoryMap.delete(task.id);
             } catch (err) {
-                console.warn(`⚠️ Gagal deteksi detail ${task.title}`);
+                console.log(`⚠️ Gagal membaca detail untuk: ${task.title}`);
+                if (oldTask) currentTasks[i] = oldTask;
             }
         }
 
-        // 4. Final Save
-        fs.writeFileSync(dataPath, JSON.stringify(allTasks, null, 2));
-        console.log(`✨ Scraping Berhasil! ${allTasks.length} entri disimpan ke public/deadlines.json`);
+        // --- 4. GABUNGKAN ---
+        const finalTasks = [...currentTasks, ...Array.from(taskHistoryMap.values())];
 
-    } catch (e) {
-        console.error('❌ Fatal Error during scrape:', e);
+        console.log('\n🎉 Proses Scraping Selesai!');
+        fs.writeFileSync(dataFile, JSON.stringify(finalTasks, null, 2));
+        console.log(`📁 Berhasil menyimpan total ${finalTasks.length} tugas ke deadlines.json`);
+    } catch (error) {
+        console.error('❌ Error Total:', error);
     } finally {
         await browser.close();
     }
