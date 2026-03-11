@@ -3,120 +3,71 @@ const chromiumPack = require('@sparticuz/chromium');
 
 module.exports = async function handler(req, res) {
     const startTime = Date.now();
-    
-    // Vercel Hobby Limit is 10s. We should stop and return what we have at 9s.
-    const VERCEL_TIMEOUT = 9500; 
+    const TIMEOUT_BUDGET = 9000; // 9 seconds max total
 
     const username = process.env.KULINO_USERNAME;
     const password = process.env.KULINO_PASSWORD;
 
     if (!username || !password) {
-        return res.status(401).json({ error: 'Kredensial tidak ditemukan di Environment Variables Vercel.' });
+        return res.status(401).json({ error: 'Missing Credentials' });
     }
 
     let browser;
     try {
-        console.log('--- Start Scrape ---');
-        
-        // Launch Configuration for Serverless
         browser = await chromium.launch({
-            args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox'],
+            args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
             executablePath: await chromiumPack.executablePath(),
             headless: chromiumPack.headless,
         });
+
         
         const context = await browser.newContext({
             userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
         });
+        
+        // Block images and CSS to speed up
+        await context.route('**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2}', route => route.abort());
+        
         const page = await context.newPage();
 
-        // 1. FAST LOGIN
-        console.log('Logging in...');
+        // 1. LOGIN (Hyper fast)
         await page.goto('https://kulino.dinus.ac.id/login/index.php', { 
             waitUntil: 'domcontentloaded', 
-            timeout: 10000 
+            timeout: 5000 
         });
         
         await page.fill('#username', username);
         await page.fill('#password', password);
         
-        // Wait for ANY navigation that indicates success (dashboard or home)
         await Promise.all([
-            page.waitForNavigation({ timeout: 15000, waitUntil: 'domcontentloaded' }),
+            page.waitForNavigation({ timeout: 5000, waitUntil: 'domcontentloaded' }).catch(() => null),
             page.click('#loginbtn'),
         ]);
 
-        const currentURL = page.url();
-        console.log('Login successful, currently at:', currentURL);
+        // 2. SCRAPE DASHBOARD (The only thing we can afford in 10s)
+        if (Date.now() - startTime > 7500) throw new Error('Timeout nearing');
 
-        // Ensure we are on the dashboard
-        if (!currentURL.includes('/my/')) {
-            console.log('Redirecting to dashboard...');
-            await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 8000 });
-        }
-
-
-        // 2. SCRAPE DASHBOARD (Dinamis)
-        // Check time remaining
-        if (Date.now() - startTime > VERCEL_TIMEOUT) throw new Error('Timeout after login');
+        await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 3000 }).catch(() => null);
 
         const courses = await page.evaluate(() => {
-            const selectors = ['.coursename', '.course-name', '.multiline', '.card-title'];
             const results = [];
-            const seenUrls = new Set();
-            selectors.forEach(selector => {
-                document.querySelectorAll(selector).forEach(el => {
-                    const link = el.tagName === 'A' ? el : el.querySelector('a');
-                    if (link && link.href && !seenUrls.has(link.href)) {
-                        seenUrls.add(link.href);
-                        results.push({ title: el.textContent.trim(), url: link.href });
-                    }
-                });
+            const seen = new Set();
+            document.querySelectorAll('a[href*="course/view.php?id="]').forEach(el => {
+                const title = el.textContent.trim();
+                const url = el.href;
+                if (title && url && !seen.has(url) && title.length > 3) {
+                    seen.add(url);
+                    results.push({ course: title, title: 'Matakuliah ditemukan', url: url, type: 'course' });
+                }
             });
             return results;
         });
 
-        console.log(`Found ${courses.length} courses.`);
-
-        const allItems = [];
-        // Only attempt to scrape the FIRST course to stay within 10s
-        // If we have more than 7s already, we just return the courses list
-        if (Date.now() - startTime < 7000 && courses.length > 0) {
-            const course = courses[0];
-            try {
-                console.log(`Scraping course: ${course.title}`);
-                await page.goto(course.url, { waitUntil: 'domcontentloaded', timeout: 5000 });
-                const items = await page.evaluate((cTitle) => {
-                    return Array.from(document.querySelectorAll('.activityinstance')).map(mod => {
-                        const link = mod.querySelector('a');
-                        const img = mod.querySelector('img');
-                        return link ? {
-                            course: cTitle,
-                            title: link.textContent.trim(),
-                            url: link.href,
-                            type: img ? img.alt : 'activity',
-                            scrapedAt: new Date().toISOString()
-                        } : null;
-                    }).filter(i => i);
-                }, course.title);
-                allItems.push(...items);
-            } catch (err) {
-                console.warn('Course scrape partial failure:', err.message);
-            }
-        }
-
         await browser.close();
-        
-        // Return whatever we managed to get
-        return res.status(200).json(allItems.length > 0 ? allItems : courses.map(c => ({ course: c.title, title: 'Matakuliah ditemukan', url: c.url, type: 'course' })));
-
+        return res.status(200).json(courses);
     } catch (error) {
-        console.error('Final Scrape Error:', error);
         if (browser) await browser.close();
-        return res.status(500).json({ 
-            error: 'Gagal melakukan scraping', 
-            details: error.message,
-            timeElapsed: `${Date.now() - startTime}ms`
-        });
+        return res.status(500).json({ error: 'Scrape Failed', details: error.message });
     }
 }
+

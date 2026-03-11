@@ -38,7 +38,7 @@ async function performScrape() {
     try {
         if (chromiumPack) {
             browser = await chromium.launch({
-                args: chromiumPack.args,
+                args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
                 executablePath: await chromiumPack.executablePath(),
                 headless: chromiumPack.headless,
             });
@@ -46,6 +46,7 @@ async function performScrape() {
             // Local fallback
             browser = await chromium.launch({ headless: true });
         }
+
         const context = await browser.newContext();
         const page = await context.newPage();
 
