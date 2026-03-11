@@ -34,3 +34,4 @@ uploads/
 deadlines.json
 .agent/
 .gemini/
+.wwebjs_auth/
