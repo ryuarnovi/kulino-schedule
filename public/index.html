@@ -299,17 +299,23 @@
                 `;
 
                 let res = await fetch('/deadlines.json').catch(() => null);
+                let data = [];
                 
-                // Jika file static tidak ada atau error, fallback ke API Live Scrape
-                if (!res || !res.ok) {
-                    console.log('Fetching from Live API Scraper...');
-                    res = await fetch('/api/scrape');
-                } else {
-                    console.log('Loading from Cached deadlines.json');
+                if (res && res.ok) {
+                    data = await res.json();
+                    console.log('Loaded from Cached deadlines.json');
                 }
 
-                if (!res || !res.ok) throw new Error('Gagal mengambil data');
-                allData = await res.json();
+                // Jika data kosong atau fetch gagal, paksa Live Scrape
+                if (!data || data.length === 0) {
+                    console.log('Data cache empty or missing. Fetching from Live API Scraper...');
+                    res = await fetch('/api/scrape');
+                    if (!res.ok) throw new Error('Live Scrape Failed');
+                    data = await res.json();
+                }
+
+                allData = data;
+
                 
                 // Sort by deadline: nearest first
                 allData.sort((a, b) => {

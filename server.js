@@ -56,6 +56,29 @@ async function performScrape() {
         await page.click('#loginbtn');
         await page.waitForTimeout(3000);
 
+        // 2. SCRAPE DASHBOARD (Dinamis)
+        console.log('📋 Discovering courses...');
+        await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded' });
+        
+        const discoveredCourses = await page.evaluate(() => {
+            const selectors = ['.coursename', '.course-name', '.multiline', '.card-title'];
+            const results = [];
+            const seenUrls = new Set();
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(el => {
+                    const link = el.tagName === 'A' ? el : el.querySelector('a');
+                    if (link && link.href && !seenUrls.has(link.href)) {
+                        seenUrls.add(link.href);
+                        results.push({ title: el.textContent.trim(), url: link.href });
+                    }
+                });
+            });
+            return results;
+        });
+
+        console.log(`📚 Found ${discoveredCourses.length} courses dynamically.`);
+
+        // Fallback to explicit courses if discovery fails (backward compatibility)
         const explicitCourses = [
             { title: "OTOMATA DAN TEORI BAHASA", url: "https://kulino.dinus.ac.id/course/view.php?id=30962" },
             { title: "JARINGAN KOMPUTER", url: "https://kulino.dinus.ac.id/course/view.php?id=30994" },
@@ -68,9 +91,11 @@ async function performScrape() {
             { title: "BAHASA INGGRIS", url: "https://kulino.dinus.ac.id/course/view.php?id=31295" }
         ];
 
+        const coursesToScrape = discoveredCourses.length > 0 ? discoveredCourses : explicitCourses;
         const allItems = [];
 
-        for (const course of explicitCourses) {
+        for (const course of coursesToScrape) {
+
             await page.goto(course.url);
             const items = await page.evaluate((cTitle) => {
                 return Array.from(document.querySelectorAll('.activityinstance')).map(mod => {
@@ -138,7 +163,16 @@ async function performScrape() {
         }
 
         await browser.close();
+        
+        // Simpan ke file cache jika lokal (biar performa cepat di reload berikutnya)
+        if (!process.env.VERCEL) {
+            fs.writeFileSync(path.join(__dirname, 'deadlines.json'), JSON.stringify(allItems, null, 2));
+            // Juga copy ke public agar fetch() langsung ketemu
+            fs.writeFileSync(path.join(__dirname, 'public/deadlines.json'), JSON.stringify(allItems, null, 2));
+        }
+
         return allItems;
+
     } catch (err) {
         if (browser) await browser.close();
         throw err;
