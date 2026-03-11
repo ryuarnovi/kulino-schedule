@@ -12,7 +12,12 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 
-const upload = multer({ dest: 'uploads/' });
+// Multer setup for local and Vercel fallback
+const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+const upload = multer({ dest: uploadDir });
 const app = express();
 const PORT = process.env.PORT || 3000;
 
