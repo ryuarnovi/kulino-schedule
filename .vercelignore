@@ -1,0 +1,9 @@
+server.js
+node_modules
+.env
+.wwebjs_auth
+uploads
+scripts
+.github
+.agent
+.gemini

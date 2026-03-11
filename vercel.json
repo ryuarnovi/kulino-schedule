@@ -1,9 +1,7 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/scrape", "destination": "/api/scrape.js" },
-    { "source": "/api/submit", "destination": "/api/submit.js" },
-    { "source": "/deadlines.json", "destination": "/deadlines.json" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": "/api/$1" }
   ]
 }
