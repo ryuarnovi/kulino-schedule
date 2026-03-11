@@ -1,11 +1,13 @@
 {
+  "version": 2,
   "functions": {
-    "api/scrape.js": {
-      "memory": 1024,
-      "maxDuration": 10
+    "api/*.js": {
+      "maxDuration": 15
     }
   },
   "rewrites": [
-    { "source": "/api/scrape", "destination": "/api/scrape.js" }
+    { "source": "/api/scrape", "destination": "/api/scrape.js" },
+    { "source": "/api/submit", "destination": "/api/submit.js" },
+    { "source": "/(.*)", "destination": "/$1" }
   ]
 }

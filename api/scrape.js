@@ -2,9 +2,11 @@ const { chromium } = require('playwright-core');
 const chromiumPack = require('@sparticuz/chromium');
 
 module.exports = async function handler(req, res) {
-    // Increase timeout for the response if possible (Vercel might still cap it)
-    // but we can try to be as fast as possible.
+    const startTime = Date.now();
     
+    // Vercel Hobby Limit is 10s. We should stop and return what we have at 9s.
+    const VERCEL_TIMEOUT = 9500; 
+
     const username = process.env.KULINO_USERNAME;
     const password = process.env.KULINO_PASSWORD;
 
@@ -14,38 +16,42 @@ module.exports = async function handler(req, res) {
 
     let browser;
     try {
-        console.log('Launching browser...');
+        console.log('--- Start Scrape ---');
+        
+        // Launch Configuration for Serverless
         browser = await chromium.launch({
-            args: chromiumPack.args,
+            args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox'],
             executablePath: await chromiumPack.executablePath(),
             headless: chromiumPack.headless,
         });
         
         const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
         });
         const page = await context.newPage();
 
-        // 1. Login
+        // 1. FAST LOGIN
         console.log('Logging in...');
-        await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.goto('https://kulino.dinus.ac.id/login/index.php', { 
+            waitUntil: 'domcontentloaded', 
+            timeout: 8000 
+        });
+        
         await page.fill('#username', username);
         await page.fill('#password', password);
         
-        // Use Promise.all for navigation after click to avoid race conditions
+        // Click and wait for the dashboard to start loading, not necessarily finish
         await Promise.all([
-            page.waitForNavigation({ waitUntil: 'networkidle', timeout: 30000 }),
+            page.waitForURL('**/my/**', { timeout: 8000, waitUntil: 'domcontentloaded' }),
             page.click('#loginbtn'),
         ]);
 
-        // 2. Navigasi & Scrape
-        console.log('Navigating to dashboard...');
-        await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 30000 });
-        
-        // Wait for courses to be visible
-        await page.waitForSelector('.coursename, .course-name, .card-title', { timeout: 10000 }).catch(() => console.log('Timeout waiting for course selectors'));
+        console.log('Dashboard loaded.');
 
-        // Ambil matakuliah secara dinamis
+        // 2. SCRAPE DASHBOARD (Dinamis)
+        // Check time remaining
+        if (Date.now() - startTime > VERCEL_TIMEOUT) throw new Error('Timeout after login');
+
         const courses = await page.evaluate(() => {
             const selectors = ['.coursename', '.course-name', '.multiline', '.card-title'];
             const results = [];
@@ -62,13 +68,16 @@ module.exports = async function handler(req, res) {
             return results;
         });
 
-        console.log(`Found ${courses.length} courses. Scraping first 3 to stay within timeout.`);
+        console.log(`Found ${courses.length} courses.`);
 
         const allItems = [];
-        // Limit to 3 to avoid Vercel 10s/60s timeout
-        for (const course of courses.slice(0, 3)) {
+        // Only attempt to scrape the FIRST course to stay within 10s
+        // If we have more than 7s already, we just return the courses list
+        if (Date.now() - startTime < 7000 && courses.length > 0) {
+            const course = courses[0];
             try {
-                await page.goto(course.url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+                console.log(`Scraping course: ${course.title}`);
+                await page.goto(course.url, { waitUntil: 'domcontentloaded', timeout: 5000 });
                 const items = await page.evaluate((cTitle) => {
                     return Array.from(document.querySelectorAll('.activityinstance')).map(mod => {
                         const link = mod.querySelector('a');
@@ -83,21 +92,23 @@ module.exports = async function handler(req, res) {
                     }).filter(i => i);
                 }, course.title);
                 allItems.push(...items);
-            } catch (courseErr) {
-                console.error(`Error scraping course ${course.title}:`, courseErr.message);
+            } catch (err) {
+                console.warn('Course scrape partial failure:', err.message);
             }
         }
 
         await browser.close();
-        return res.status(200).json(allItems);
+        
+        // Return whatever we managed to get
+        return res.status(200).json(allItems.length > 0 ? allItems : courses.map(c => ({ course: c.title, title: 'Matakuliah ditemukan', url: c.url, type: 'course' })));
 
     } catch (error) {
-        console.error('Scrape error:', error);
+        console.error('Final Scrape Error:', error);
         if (browser) await browser.close();
         return res.status(500).json({ 
             error: 'Gagal melakukan scraping', 
             details: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined 
+            timeElapsed: `${Date.now() - startTime}ms`
         });
     }
 }

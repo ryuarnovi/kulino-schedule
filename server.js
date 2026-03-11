@@ -1,6 +1,12 @@
 require('dotenv').config();
 const express = require('express');
-const { chromium } = require('playwright');
+const { chromium } = require('playwright-core');
+let chromiumPack;
+try {
+    chromiumPack = require('@sparticuz/chromium');
+} catch (e) {
+    // Local environment might not have sparticuz
+}
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
@@ -23,7 +29,16 @@ async function performScrape() {
 
     let browser;
     try {
-        browser = await chromium.launch({ headless: true });
+        if (chromiumPack) {
+            browser = await chromium.launch({
+                args: chromiumPack.args,
+                executablePath: await chromiumPack.executablePath(),
+                headless: chromiumPack.headless,
+            });
+        } else {
+            // Local fallback
+            browser = await chromium.launch({ headless: true });
+        }
         const context = await browser.newContext();
         const page = await context.newPage();
 
@@ -144,7 +159,15 @@ app.post('/api/submit', upload.single('file'), async (req, res) => {
 
     let browser;
     try {
-        browser = await chromium.launch({ headless: true });
+        if (chromiumPack) {
+            browser = await chromium.launch({
+                args: chromiumPack.args,
+                executablePath: await chromiumPack.executablePath(),
+                headless: chromiumPack.headless,
+            });
+        } else {
+            browser = await chromium.launch({ headless: true });
+        }
         const context = await browser.newContext();
         const page = await context.newPage();
 
