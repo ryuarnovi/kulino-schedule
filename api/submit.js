@@ -8,11 +8,18 @@ const multer = require('multer');
 // without some boilerplate. However, we can try to parse the multipart form.
 // For now, let's just implement the logic.
 
-export const config = {
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
+// Vercel handles this via module.exports.config in CommonJS
+module.exports.config = {
   api: {
     bodyParser: false,
   },
 };
+
 
 // Simple multipart parser for Vercel
 const getMultipartData = (req) => {
