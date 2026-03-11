@@ -34,19 +34,27 @@ module.exports = async function handler(req, res) {
         console.log('Logging in...');
         await page.goto('https://kulino.dinus.ac.id/login/index.php', { 
             waitUntil: 'domcontentloaded', 
-            timeout: 8000 
+            timeout: 10000 
         });
         
         await page.fill('#username', username);
         await page.fill('#password', password);
         
-        // Click and wait for the dashboard to start loading, not necessarily finish
+        // Wait for ANY navigation that indicates success (dashboard or home)
         await Promise.all([
-            page.waitForURL('**/my/**', { timeout: 8000, waitUntil: 'domcontentloaded' }),
+            page.waitForNavigation({ timeout: 15000, waitUntil: 'domcontentloaded' }),
             page.click('#loginbtn'),
         ]);
 
-        console.log('Dashboard loaded.');
+        const currentURL = page.url();
+        console.log('Login successful, currently at:', currentURL);
+
+        // Ensure we are on the dashboard
+        if (!currentURL.includes('/my/')) {
+            console.log('Redirecting to dashboard...');
+            await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 8000 });
+        }
+
 
         // 2. SCRAPE DASHBOARD (Dinamis)
         // Check time remaining

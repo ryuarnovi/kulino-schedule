@@ -302,19 +302,27 @@
                 let data = [];
                 
                 if (res && res.ok) {
-                    data = await res.json();
-                    console.log('Loaded from Cached deadlines.json');
+                    try {
+                        data = await res.json();
+                        console.log('Loaded from Cached deadlines.json');
+                    } catch (e) {
+                        console.warn('Cache corrupted:', e);
+                    }
                 }
 
                 // Jika data kosong atau fetch gagal, paksa Live Scrape
-                if (!data || data.length === 0) {
+                if (!Array.isArray(data) || data.length === 0) {
                     console.log('Data cache empty or missing. Fetching from Live API Scraper...');
                     res = await fetch('/api/scrape');
-                    if (!res.ok) throw new Error('Live Scrape Failed');
+                    if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.error || 'Live Scrape Failed');
+                    }
                     data = await res.json();
                 }
 
-                allData = data;
+                allData = Array.isArray(data) ? data : [];
+
 
                 
                 // Sort by deadline: nearest first
