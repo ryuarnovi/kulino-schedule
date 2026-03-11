@@ -3,8 +3,8 @@ const chromiumPack = require('@sparticuz/chromium');
 
 module.exports = async function handler(req, res) {
     const startTime = Date.now();
-    const TIMEOUT_LIMIT = 9000; 
-
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    
     const username = process.env.KULINO_USERNAME;
     const password = process.env.KULINO_PASSWORD;
 
@@ -13,97 +13,74 @@ module.exports = async function handler(req, res) {
     let browser;
     try {
         browser = await chromium.launch({
-            args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+            args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--block-new-web-contents'],
             executablePath: await chromiumPack.executablePath(),
-            headless: chromiumPack.headless,
+            headless: true,
         });
         
-        const context = await browser.newContext({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36' });
-        // Block images/CSS to save time
-        await context.route('**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2}', route => route.abort());
+        const context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+            viewport: { width: 800, height: 600 }
+        });
+        
+        // Fast intercept: Kill anything heavy
+        await context.route('**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2,ico}', route => route.abort());
         const page = await context.newPage();
 
-        // 1. LOGIN
-        console.log('Logging in...');
-        await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'domcontentloaded', timeout: 7000 });
+        // 1. FAST LOGIN
+        await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'commit', timeout: 5000 });
         await page.fill('#username', username);
         await page.fill('#password', password);
+        
+        // Parallel click and wait with low timeout
         await Promise.all([
-            page.waitForNavigation({ timeout: 10000, waitUntil: 'domcontentloaded' }).catch(() => null),
+            page.waitForURL('**/my/**', { timeout: 6000, waitUntil: 'commit' }).catch(() => null),
             page.click('#loginbtn'),
         ]);
 
-        // Verifikasi Login (Check if logged in)
-        const isLoggedIn = await page.evaluate(() => {
-            const text = document.body.innerText.toLowerCase();
-            return text.includes('logout') || text.includes('keluar') || !!document.querySelector('.userbutton') || !!document.querySelector('.usermenu');
+        // If we are still at 8s, we are in trouble. Return whatever we find.
+        if (Date.now() - startTime > 8500) throw new Error('Timeout at Login Stage');
+
+        // 2. SCRAPE CALENDAR (Quick list)
+        // Preferring the upcoming events view which is a flat list
+        await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'commit', timeout: 4000 }).catch(() => null);
+
+        const results = await page.evaluate(() => {
+            // Find all event containers
+            const events = Array.from(document.querySelectorAll('.eventlist .event, .calendar_event, .event'));
+            return events.map(ev => {
+                const titleLink = ev.querySelector('h3.name a') || ev.querySelector('.name a') || ev.querySelector('a[href*="/mod/"]');
+                const courseLink = ev.querySelector('.course a') || ev.querySelector('.description a[href*="course/view.php"]');
+                const dateInfo = ev.querySelector('.description') || ev.querySelector('.date');
+                
+                if (!titleLink || !titleLink.href.includes('/mod/')) return null;
+
+                const title = titleLink.textContent.trim();
+                const url = titleLink.href;
+                const course = courseLink ? courseLink.textContent.trim() : 'Umum';
+                const dateText = dateInfo ? dateInfo.textContent.trim().replace(/\n/g, ' ') : '';
+
+                // Keywords filtering
+                const t = title.toLowerCase();
+                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz'];
+                if (!filter.some(f => t.includes(f))) return null;
+
+                return {
+                    course,
+                    title,
+                    url,
+                    deadline: dateText,
+                    type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity')
+                };
+            }).filter(i => i);
         });
-        
-        if (!isLoggedIn) {
-             throw new Error('Login Gagal. Mohon cek KULINO_USERNAME dan KULINO_PASSWORD Anda.');
-        }
-
-        // 2. SCRAPE CALENDAR
-        let results = [];
-        try {
-            console.log('Navigating to Calendar...');
-            // Direct to upcoming view as it's the most reliable list for tasks
-            await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 5000 });
-            
-            results = await page.evaluate(() => {
-                // Selector for Moodle Calendar events
-                const events = Array.from(document.querySelectorAll('.eventlist .event, .calendar_event'));
-                return events.map(ev => {
-                    const titleEl = ev.querySelector('h3.name a') || ev.querySelector('.name a');
-                    const courseEl = ev.querySelector('.course a') || ev.querySelector('.course');
-                    const dateEl = ev.querySelector('.description') || ev.querySelector('.date'); 
-                    
-                    if (!titleEl) return null;
-                    
-                    const title = titleEl.textContent.trim();
-                    const url = titleEl.href;
-                    const course = courseEl ? courseEl.textContent.trim() : 'Umum';
-                    const deadline = dateEl ? dateEl.textContent.trim().replace(/\n/g, ' ') : '';
-                    
-                    // Kita hanya ingin Tugas, Praktikum, atau Kuis
-                    const t = title.toLowerCase();
-                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz'];
-                    const isTask = filter.some(f => t.includes(f));
-                    
-                    if (!isTask) return null;
-
-                    return {
-                        course,
-                        title,
-                        url,
-                        deadline,
-                        type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity')
-                    };
-                }).filter(i => i);
-            });
-        } catch (e) {
-            console.error('Scrape Calendar Error:', e.message);
-        }
-
-        // 3. FALLBACK DASHBOARD (If empty & time exists)
-        if (results.length === 0 && (Date.now() - startTime < 7500)) {
-            console.log('Calendar empty, fallback to Dashboard...');
-            await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 4000 }).catch(() => null);
-            const courses = await page.evaluate(() => {
-                return Array.from(document.querySelectorAll('.coursename, .course-name')).map(el => {
-                    const link = el.tagName === 'A' ? el : el.querySelector('a');
-                    if (link) return { course: el.textContent.trim(), title: 'Matakuliah ditemukan', url: link.href, type: 'course' };
-                    return null;
-                }).filter(i => i);
-            });
-            results = [...courses];
-        }
 
         await browser.close();
         return res.status(200).json(results);
 
     } catch (error) {
         if (browser) await browser.close();
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: 'Scrape Failed', details: error.message });
     }
 }
+

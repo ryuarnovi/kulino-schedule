@@ -310,18 +310,42 @@
                     }
                 }
 
+                let isSuccess = false;
+
                 // Jika data kosong atau fetch gagal, paksa Live Scrape
                 if (!Array.isArray(data) || data.length === 0) {
                     console.log('Data cache empty or missing. Fetching from Live API Scraper...');
-                    res = await fetch('/api/scrape');
+                    res = await fetch('/api/scrape?t=' + Date.now());
+
                     if (!res.ok) {
                         const errData = await res.json().catch(() => ({}));
                         throw new Error(errData.error || 'Live Scrape Failed');
                     }
                     data = await res.json();
+                    isSuccess = true;
+                } else {
+                    isSuccess = true;
                 }
 
                 allData = Array.isArray(data) ? data : [];
+                
+                if (isSuccess && allData.length === 0) {
+                    // Berhasil scrap tapi memang tidak ada tugas di kalender
+                    document.getElementById('grid-container').innerHTML = `
+                        <div class="col-span-full text-center py-32 glass rounded-3xl border-dashed">
+                            <i data-lucide="check-circle" class="h-12 w-12 text-emerald-500 mx-auto mb-4"></i>
+                            <h2 class="text-xl font-bold mb-2">Semua Aman!</h2>
+                            <p class="text-slate-400 max-w-md mx-auto">Tidak ditemukan tugas aktif di Kalender Kulino Anda saat ini.</p>
+                            <button onclick="loadData()" class="mt-6 px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all font-medium text-sm">
+                                Refresh
+                            </button>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    updateStats();
+                    return;
+                }
+
 
 
                 
