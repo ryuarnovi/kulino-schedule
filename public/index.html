@@ -390,7 +390,8 @@
                        title.includes('tugas') || title.includes('praktikum') || title.includes('pratikum') || title.includes('kuis');
             });
 
-            const urgentTasks = totalTasks.filter(i => i.deadlineTimestamp && (i.deadlineTimestamp - now) <= h3 && (i.deadlineTimestamp - now) > 0);
+            const pendingTasks = totalTasks.filter(i => !i.isSubmitted);
+            const urgentTasks = pendingTasks.filter(i => i.deadlineTimestamp && (i.deadlineTimestamp - now) <= h3 && (i.deadlineTimestamp - now) > 0);
             const totalResources = allData.length - totalTasks.length;
 
             document.getElementById('stat-urgent').innerText = urgentTasks.length;
@@ -404,6 +405,7 @@
                 document.getElementById('last-update').innerText = date.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
             }
         }
+
 
         function renderGrid() {
             const container = document.getElementById('grid-container');
@@ -454,18 +456,23 @@
                             <div class="grid grid-cols-1 gap-4">
                                 ${assignments.length > 0 ? assignments.map((item, idx) => {
                                     const canUpload = (item.type || '').toLowerCase().includes('assign') || (item.type || '').toLowerCase().includes('tugas');
-                                    const isUrgent = item.deadlineTimestamp && (item.deadlineTimestamp - now) <= h3 && (item.deadlineTimestamp - now) > 0;
+                                    const isDone = item.isSubmitted;
+                                    const isUrgent = !isDone && item.deadlineTimestamp && (item.deadlineTimestamp - now) <= h3 && (item.deadlineTimestamp - now) > 0;
+                                    
                                     return `
-                                        <div class="glass p-6 clip-corners hud-border hover-lift flex flex-col group relative overflow-hidden">
+                                        <div class="glass p-6 clip-corners hud-border hover-lift flex flex-col group relative overflow-hidden ${isDone ? 'opacity-60 saturate-50' : ''}">
                                             ${isUrgent ? `<div class="absolute top-0 right-0 bg-rose-500 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest animate-pulse z-20">Urgent H-3</div>` : ''}
-                                            <h4 class="text-lg font-bold text-main group-hover:text-primary transition-colors mb-3">${item.title}</h4>
+                                            ${isDone ? `<div class="absolute top-0 right-0 bg-emerald-500 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-20">Selesai</div>` : ''}
+                                            
+                                            <h4 class="text-lg font-bold ${isDone ? 'text-slate-400 line-through' : 'text-main'} group-hover:text-primary transition-colors mb-3">${item.title}</h4>
                                             
                                             ${item.deadline ? `
-                                                <div class="flex items-center gap-2 ${isUrgent ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : 'text-muted bg-surface/50 border-muted/20'} text-[11px] font-bold mb-4 w-fit px-3 py-1.5 rounded-lg border">
-                                                    <i data-lucide="clock" class="h-3.5 w-3.5"></i>
-                                                    <span>${item.deadline}</span>
+                                                <div class="flex items-center gap-2 ${isDone ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : (isUrgent ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : 'text-muted bg-surface/50 border-muted/20')} text-[11px] font-bold mb-4 w-fit px-3 py-1.5 rounded-lg border">
+                                                    <i data-lucide="${isDone ? 'check-circle' : 'clock'}" class="h-3.5 w-3.5"></i>
+                                                    <span>${isDone ? 'Sudah Dikumpulkan' : item.deadline}</span>
                                                 </div>
                                             ` : ''}
+
 
                                             ${canUpload ? `
                                                 <div class="p-3 bg-surface/30 rounded-xl border border-muted/10 mb-3 mt-auto">

@@ -33,6 +33,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add deadlines.json
+          git add public/deadlines.json
           git commit -m "chore: auto-update deadlines from Kulino [skip ci]" || echo "No changes to commit"
           git push
