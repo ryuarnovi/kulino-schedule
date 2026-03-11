@@ -1,1 +1,200 @@
-[]
+[
+  {
+    "id": "280482",
+    "title": "Praktikum 1",
+    "course": "",
+    "deadlineTimestamp": 1772668800000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797118",
+    "scrapedAt": "2026-03-11T19:44:26.839Z",
+    "description": "Kumpulkan bentuk PDF.\n\nScreenshot bukti instalasi di komputer/laptop\nScreenshot tampilan output biodata diri. Bisa input nilai plus",
+    "isSubmitted": true,
+    "deadline": "Thursday, 5 March 2026, 12:00 AM"
+  },
+  {
+    "id": "280724",
+    "title": "Tugas Ke-1",
+    "course": "[20252] SISTEM BASIS DATA - A11.44RPL",
+    "deadlineTimestamp": 1773791940000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1798460",
+    "scrapedAt": "2026-03-11T19:44:28.167Z",
+    "description": "Tugas ke-1 tersedia di Materi slide yang ke-34",
+    "isSubmitted": false,
+    "deadline": "Tuesday, 17 March 2026, 11:59 PM"
+  },
+  {
+    "id": "280738",
+    "title": "Repositori#1",
+    "course": "[20252] PEMBELAJARAN MESIN - A11.4405",
+    "deadlineTimestamp": 1774476000000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1798483",
+    "scrapedAt": "2026-03-11T19:44:28.985Z",
+    "description": "Kirim link repository online dari praktikum pertemuan berjalan(Contoh Repository Online : Github, Gitlab, BitBucket)\n\nLakukan proses setup environment praktikum menggunakan bahasa pemrograman python, bisa menggunakan Anaconda Navigator, mini conda, google colab, atau yang lainnya.\nBuka folder Minggu-2/python pada folder materi, running script yang ada disitu dan bisa dimprovisasikan praktikum yang lain.",
+    "isSubmitted": true,
+    "deadline": "Wednesday, 25 March 2026, 10:00 PM"
+  },
+  {
+    "id": "280481",
+    "title": "Teori 1",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797116",
+    "scrapedAt": "2026-03-11T19:44:34.074Z",
+    "description": "Buat 5 class yang masing masing memiliki 5 attribute. Buatkan juga 3 objek dari masing masing class. Tulis di kertas, foto lalu kumpulkan",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280484",
+    "title": "Teori 2",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797129",
+    "scrapedAt": "2026-03-11T19:44:34.894Z",
+    "description": "Buatkan Class Diagram yang menerapkan class, attribute, method dan objek. Buat 1 class dengan 3 objek",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280485",
+    "title": "Praktikum 2",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797130",
+    "scrapedAt": "2026-03-11T19:44:35.708Z",
+    "description": "Kerjakan:\n\n\nPraktikum 1: Latihan 2\nPraktikum 2: Latihan 1 dan Latihan 2\n\n\nKirim screenshot dan hasil run dalam bentuk PDF",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280486",
+    "title": "Teori 3",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797131",
+    "scrapedAt": "2026-03-11T19:44:36.522Z",
+    "description": "Buatkan Class Diagram yang menerapkan class, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280487",
+    "title": "Praktikum 3",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797133",
+    "scrapedAt": "2026-03-11T19:44:37.337Z",
+    "description": "Kerjakan:\n\n\nPraktikum 3: Latihan 3 dan Latihan 4\n\nKirim screenshot dan hasil run dalam bentuk PDF",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280488",
+    "title": "Praktikum 3 - 2",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797134",
+    "scrapedAt": "2026-03-11T19:44:38.154Z",
+    "description": "Terapkan dari Class Diagram yang dibuat dari Tugas Teori 3.Kirim foto class diagram, source code dan hasil run dalam 1 pdf",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280494",
+    "title": "Teori 4",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797146",
+    "scrapedAt": "2026-03-11T19:44:38.992Z",
+    "description": "Buatkan Class Diagram yang menerapkan class, construct, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280496",
+    "title": "Praktikum 4",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797149",
+    "scrapedAt": "2026-03-11T19:44:39.805Z",
+    "description": "Kerjakan:\n\n\nPraktikum 4: Latihan 3 dan Latihan 4\n\nKirim screenshot dan hasil run dalam bentuk PDF",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280499",
+    "title": "Prakikum 4 - 2",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797154",
+    "scrapedAt": "2026-03-11T19:44:40.621Z",
+    "description": "Buat penerapan dari class diagram teori 4. Kirim dalam bentuk pdf, screenshot source code dan hasil run",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280504",
+    "title": "Praktikum 5",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797160",
+    "scrapedAt": "2026-03-11T19:44:41.437Z",
+    "description": "Kerjakan:\n\n\nPraktikum 5: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280505",
+    "title": "Teori 5",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797161",
+    "scrapedAt": "2026-03-11T19:44:42.253Z",
+    "description": "Buatkan Class Diagram yang menerapkan inheritence overriding lalu buat class, construct, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280507",
+    "title": "Praktikum 6",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797163",
+    "scrapedAt": "2026-03-11T19:44:43.070Z",
+    "description": "Kerjakan:\n\n\nPraktikum 6: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280509",
+    "title": "Praktikum 7",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797168",
+    "scrapedAt": "2026-03-11T19:44:43.886Z",
+    "description": "Kerjakan:\n\n\nPraktikum 7: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280512",
+    "title": "UTS Simulasi - Teori",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797185",
+    "scrapedAt": "2026-03-11T19:44:44.701Z",
+    "description": "",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  },
+  {
+    "id": "280513",
+    "title": "UTS Simulasi - Praktikum",
+    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
+    "deadlineTimestamp": 1783209600000,
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797186",
+    "scrapedAt": "2026-03-11T19:44:45.511Z",
+    "description": "",
+    "isSubmitted": false,
+    "deadline": "Sunday, 5 July 2026, 12:00 AM"
+  }
+]
