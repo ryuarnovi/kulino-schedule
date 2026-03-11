@@ -33,21 +33,26 @@ module.exports = async function handler(req, res) {
         // 1. LOGIN (Hyper fast)
         await page.goto('https://kulino.dinus.ac.id/login/index.php', { 
             waitUntil: 'domcontentloaded', 
-            timeout: 5000 
+            timeout: 7000 
         });
         
         await page.fill('#username', username);
         await page.fill('#password', password);
         
+        // Use a more reliable way to wait for login
         await Promise.all([
-            page.waitForNavigation({ timeout: 5000, waitUntil: 'domcontentloaded' }).catch(() => null),
+            page.waitForURL('**/my/**', { timeout: 10000, waitUntil: 'domcontentloaded' }).catch(() => null),
             page.click('#loginbtn'),
         ]);
 
-        // 2. SCRAPE DASHBOARD (The only thing we can afford in 10s)
-        if (Date.now() - startTime > 7500) throw new Error('Timeout nearing');
+        // 2. SCRAPE DASHBOARD (Check if we are actually logged in)
+        if (Date.now() - startTime > 12000) throw new Error('Vercel Execution Limit reached');
 
-        await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 3000 }).catch(() => null);
+        // If not on dashboard, try to go there once
+        if (!page.url().includes('/my/')) {
+            await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 5000 }).catch(() => null);
+        }
+
 
         const courses = await page.evaluate(() => {
             const results = [];
