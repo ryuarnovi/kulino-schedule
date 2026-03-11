@@ -10,14 +10,8 @@ Kulino Flow adalah dashboard modern, cerdas, dan futuristik untuk mahasiswa Univ
 - 📂 **Quick Submit**: Unggah tugas langsung dari dashboard tanpa harus membuka web Kulino.
 
 ## 📸 Tampilan Dashboard
-![Dashboard Light Mode](images/image.png)
-*Tampilan Clean dan Elegant dalam Light Mode*
-
-![Dashboard Dark Mode](images/image2.png)
-*Tampilan Futuristic Sci-Fi dalam Dark Mode*
-
-![Deadline Detail](images/image3.png)
-*Detail Tugas dengan Indikator Deadline*
+![Dashboard Dark Mode](public/images/image.png)
+*Tampilan Clean dan Elegant dalam Dark Mode*
 
 ## 🚀 Persiapan Instalasi
 
