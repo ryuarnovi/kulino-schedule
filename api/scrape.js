@@ -47,33 +47,37 @@ module.exports = async function handler(req, res) {
             page.click('#loginbtn'),
         ]);
 
-        // 2. SCRAPE CALENDAR MONTH VIEW
+        // 2. SCRAPE CALENDAR (Try Upcoming first for Course Names, then Month)
         let results = [];
+        const h3 = 3 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+
+        // Upcoming View (Faster for Course Names)
         try {
-            await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=month', { waitUntil: 'domcontentloaded', timeout: 5000 });
-            await page.waitForSelector('.calendartable', { timeout: 3000 }).catch(() => {});
+            await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 5000 });
+            await page.waitForSelector('.eventlist .event', { timeout: 3000 }).catch(() => {});
             
             results = await page.evaluate(() => {
-                const events = Array.from(document.querySelectorAll('a[data-action="view-event"]'));
-                return events.map(ev => {
-                    const rawTitle = ev.getAttribute('title') || '';
-                    const url = ev.href;
-                    let title = rawTitle.replace(' is due', '').replace(' opens', '').trim();
-                    const parentDay = ev.closest('td.day');
-                    const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
+                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
+                return Array.from(document.querySelectorAll('.eventlist .event')).map(ev => {
+                    const titleLink = ev.querySelector('h3.name a') || ev.querySelector('a[href*="/mod/"]');
+                    if (!titleLink) return null;
+                    
+                    const title = titleLink.textContent.trim().replace(/\s+is\s+due$/i, '').replace(/\s+opens$/i, '').trim();
+                    const url = titleLink.href;
                     
                     const t = title.toLowerCase();
-                    // FILTER HANYA TUGAS/DEADLINE
-                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
                     const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz');
-                    
                     if (!isTask) return null;
 
+                    // Upcoming view has course link near the bottom
+                    const courseLink = ev.querySelector('a[href*="course/view.php?id="]');
+                    let courseName = courseLink ? courseLink.textContent.trim() : "";
+
                     return {
-                        id: ev.getAttribute('data-event-id'),
+                        id: ev.getAttribute('data-event-id') || url,
                         title, url,
-                        course: "", // Monthly view doesn't easily provide course name without modal
-                        deadlineTimestamp: timestamp,
+                        course: courseName,
                         type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
                         scrapedAt: new Date().toISOString()
                     };
@@ -81,38 +85,48 @@ module.exports = async function handler(req, res) {
             });
         } catch (e) {}
 
-        // Fallback for immediate upcoming view
+        // Fallback to Month View if Upcoming is empty
         if (results.length === 0 && (Date.now() - startTime < 8000)) {
             try {
-                await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 4000 });
-                await page.waitForSelector('.eventlist .event', { timeout: 2000 }).catch(() => {});
+                await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=month', { waitUntil: 'domcontentloaded', timeout: 4000 });
+                await page.waitForSelector('.calendartable', { timeout: 2000 }).catch(() => {});
                 
-                const upcomingResults = await page.evaluate(() => {
-                    return Array.from(document.querySelectorAll('.eventlist .event')).map(ev => {
-                        const titleLink = ev.querySelector('h3.name a') || ev.querySelector('a[href*="/mod/"]');
-                        if (!titleLink) return null;
-                        
-                        const courseLink = ev.querySelector('a[href*="course/view.php?id="]');
-                        let title = titleLink.textContent.trim().replace(/\s+is\s+due$/i, '').replace(/\s+opens$/i, '').trim();
-                        let course = courseLink ? courseLink.textContent.trim() : 'Umum';
+                const monthResults = await page.evaluate(() => {
+                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
+                    const events = Array.from(document.querySelectorAll('a[data-action="view-event"]'));
+                    return events.map(ev => {
+                        const rawTitle = ev.getAttribute('title') || '';
+                        const url = ev.href;
+                        let title = rawTitle.replace(' is due', '').replace(' opens', '').trim();
                         
                         const t = title.toLowerCase();
-                        const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
-                        const isTask = filter.some(f => t.includes(f)) || titleLink.href.includes('assign') || titleLink.href.includes('quiz');
-                        
+                        const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz');
                         if (!isTask) return null;
 
+                        const parentDay = ev.closest('td.day');
+                        const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
+
+                        // Try to parse course name from title attribute if possible
+                        // Format: "Course Name: Event Name is due"
+                        let courseName = "";
+                        if (rawTitle.includes(':')) {
+                            courseName = rawTitle.split(':')[0].trim();
+                        }
+
                         return {
-                            title, url: titleLink.href,
-                            course: course, // Preserve the [CODE]
-                            type: titleLink.href.includes('assign') ? 'assignment' : (titleLink.href.includes('quiz') ? 'quiz' : 'activity'),
+                            id: ev.getAttribute('data-event-id'),
+                            title, url,
+                            course: courseName,
+                            deadlineTimestamp: timestamp,
+                            type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
                             scrapedAt: new Date().toISOString()
                         };
                     }).filter(i => i);
                 });
-                results = [...results, ...upcomingResults];
+                results = [...results, ...monthResults];
             } catch (e) {}
         }
+
 
         // Final Sync with History
         results = results.map(r => ({
