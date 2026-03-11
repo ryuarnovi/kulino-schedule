@@ -1,0 +1,38 @@
+name: Kulino Auto Scraper
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Jalan setiap 1 jam
+  workflow_dispatch:      # Bisa dijalankan manual dari tab Actions
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: |
+          npm install playwright playwright-core dotenv
+          npx playwright install chromium --with-deps
+
+      - name: Run Scraper
+        env:
+          KULINO_USERNAME: ${{ secrets.KULINO_USERNAME }}
+          KULINO_PASSWORD: ${{ secrets.KULINO_PASSWORD }}
+        run: node scripts/scrape-all.js
+
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add deadlines.json
+          git commit -m "chore: auto-update deadlines from Kulino [skip ci]" || echo "No changes to commit"
+          git push

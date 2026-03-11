@@ -298,8 +298,17 @@
                     </div>
                 `;
 
-                const res = await fetch('/api/scrape');
-                if (!res.ok) throw new Error('Gagal mengambil data dari API');
+                let res = await fetch('/deadlines.json').catch(() => null);
+                
+                // Jika file static tidak ada atau error, fallback ke API Live Scrape
+                if (!res || !res.ok) {
+                    console.log('Fetching from Live API Scraper...');
+                    res = await fetch('/api/scrape');
+                } else {
+                    console.log('Loading from Cached deadlines.json');
+                }
+
+                if (!res || !res.ok) throw new Error('Gagal mengambil data');
                 allData = await res.json();
                 
                 // Sort by deadline: nearest first
