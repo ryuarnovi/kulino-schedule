@@ -72,7 +72,7 @@ async function scrapeDeep() {
 
                 // Keywords check
                 const t = cleanTitle.toLowerCase();
-                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian'];
+                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
                 if (!filter.some(f => t.includes(f)) && !url.includes('assign') && !url.includes('quiz')) continue;
 
                 const timestampMs = await ev.evaluate((el) => {
@@ -87,8 +87,7 @@ async function scrapeDeep() {
 
                 const modalData = await page.evaluate(() => {
                     const courseEl = document.querySelector('.modal-content a[href*="course/view.php?id="]');
-                    let courseName = courseEl?.textContent?.trim() || 'Umum';
-                    courseName = courseName.replace(/^\[\d+\]\s*/, '');
+                    let courseName = courseEl?.textContent?.trim() || ''; // Preserve [CODE]
                     const activityBtn = document.querySelector('.modal-content a.btn-primary');
                     const activityLink = activityBtn ? activityBtn.getAttribute('href') : null;
                     return { courseName, activityLink };

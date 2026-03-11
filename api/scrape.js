@@ -52,7 +52,7 @@ module.exports = async function handler(req, res) {
                     
                     const t = title.toLowerCase();
                     // FILTER HANYA TUGAS/DEADLINE
-                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian'];
+                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
                     const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz');
                     
                     if (!isTask) return null;
@@ -60,7 +60,7 @@ module.exports = async function handler(req, res) {
                     return {
                         id: ev.getAttribute('data-event-id'),
                         title, url,
-                        course: 'Umum (Kalender)',
+                        course: "", // Monthly view doesn't easily provide course name without modal
                         deadlineTimestamp: timestamp,
                         type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
                         scrapedAt: new Date().toISOString()
@@ -85,14 +85,14 @@ module.exports = async function handler(req, res) {
                         let course = courseLink ? courseLink.textContent.trim() : 'Umum';
                         
                         const t = title.toLowerCase();
-                        const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian'];
+                        const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
                         const isTask = filter.some(f => t.includes(f)) || titleLink.href.includes('assign') || titleLink.href.includes('quiz');
                         
                         if (!isTask) return null;
 
                         return {
                             title, url: titleLink.href,
-                            course: course.replace(/^\[\d+\]\s*/, ''),
+                            course: course, // Preserve the [CODE]
                             type: titleLink.href.includes('assign') ? 'assignment' : (titleLink.href.includes('quiz') ? 'quiz' : 'activity'),
                             scrapedAt: new Date().toISOString()
                         };

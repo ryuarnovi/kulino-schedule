@@ -373,8 +373,9 @@
 
             // Group by Course
             const groups = filteredData.reduce((acc, item) => {
-                if (!acc[item.course]) acc[item.course] = [];
-                acc[item.course].push(item);
+                const c = item.course || "Lainnya";
+                if (!acc[c]) acc[c] = [];
+                acc[c].push(item);
                 return acc;
             }, {});
 
