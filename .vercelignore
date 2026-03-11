@@ -1,4 +1,5 @@
-server.js
+# server.js removed from ignore to allow Vercel entrypoint discovery
+
 node_modules
 .env
 .wwebjs_auth
