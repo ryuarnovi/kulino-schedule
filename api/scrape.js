@@ -35,10 +35,8 @@ module.exports = async function handler(req, res) {
             page.click('#loginbtn'),
         ]);
 
-        // 2. SCRAPE CALENDAR (Try Month first, then Upcoming)
+        // 2. SCRAPE CALENDAR MONTH VIEW
         let results = [];
-        
-        // Month View (Tengga Logic)
         try {
             await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=month', { waitUntil: 'domcontentloaded', timeout: 5000 });
             await page.waitForSelector('.calendartable', { timeout: 3000 }).catch(() => {});
@@ -53,8 +51,11 @@ module.exports = async function handler(req, res) {
                     const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
                     
                     const t = title.toLowerCase();
-                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz'];
-                    if (!filter.some(f => t.includes(f)) && !url.includes('assign') && !url.includes('quiz')) return null;
+                    // FILTER HANYA TUGAS/DEADLINE
+                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian'];
+                    const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz');
+                    
+                    if (!isTask) return null;
 
                     return {
                         id: ev.getAttribute('data-event-id'),
@@ -68,7 +69,7 @@ module.exports = async function handler(req, res) {
             });
         } catch (e) {}
 
-        // Fallback to Upcoming View if Month is empty or failed
+        // Fallback for immediate upcoming view
         if (results.length === 0 && (Date.now() - startTime < 8000)) {
             try {
                 await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 4000 });
@@ -84,8 +85,10 @@ module.exports = async function handler(req, res) {
                         let course = courseLink ? courseLink.textContent.trim() : 'Umum';
                         
                         const t = title.toLowerCase();
-                        const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz'];
-                        if (!filter.some(f => t.includes(f)) && !titleLink.href.includes('assign') && !titleLink.href.includes('quiz')) return null;
+                        const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian'];
+                        const isTask = filter.some(f => t.includes(f)) || titleLink.href.includes('assign') || titleLink.href.includes('quiz');
+                        
+                        if (!isTask) return null;
 
                         return {
                             title, url: titleLink.href,
@@ -107,7 +110,3 @@ module.exports = async function handler(req, res) {
         return res.status(500).json({ error: error.message });
     }
 }
-
-
-
-
