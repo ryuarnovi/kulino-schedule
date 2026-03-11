@@ -1,22 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "api/*.js": {
-      "maxDuration": 120
-    }
-  },
   "rewrites": [
-    {
-      "source": "/api/scrape",
-      "destination": "/api/scrape.js"
-    },
-    {
-      "source": "/api/submit",
-      "destination": "/api/submit.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
-    }
+    { "source": "/api/scrape", "destination": "/api/scrape.js" },
+    { "source": "/api/submit", "destination": "/api/submit.js" },
+    { "source": "/deadlines.json", "destination": "/deadlines.json" },
+    { "source": "/(.*)", "destination": "/$1" }
   ]
 }
