@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kulino Flow - Udinus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            /* Light Mode - Slate & Mist (Enhanced Contrast) */
+            --primary: #1A1B27;
+            --primary-rgb: 26, 27, 39;
+            --primary-fg: #FFFFFF;
+            --secondary: #475569;
+            --accent: #1E293B;
+            --accent-fg: #FFFFFF;
+            --surface: #F1F5F9; /* Darker than pure white for contrast */
+            --background: #F8FAFC; /* Slightly off-white for better card contrast */
+            --background-rgb: 248, 250, 252;
+            --text-main: #0F172A;
+            --text-muted: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.9); /* More opaque */
+            --glass-border: rgba(15, 23, 42, 0.12);
+            
+            /* Background Elements */
+            --bg-accent-1: rgba(59, 130, 246, 0.05);
+            --bg-accent-2: rgba(168, 85, 247, 0.03);
+            --bg-accent-3: rgba(0, 0, 0, 0.01);
+            --pattern-opacity: 0.06;
+        }
+
+        :root.dark {
+            /* Dark Mode - Deep Space */
+            --primary: #60A5FA;
+            --primary-rgb: 96, 165, 250;
+            --primary-fg: #0F172A;
+            --secondary: #A78BFA;
+            --accent: #F472B6;
+            --accent-fg: #FFFFFF;
+            --surface: #1E293B;
+            --background: #020617;
+            --background-rgb: 2, 6, 23;
+            --text-main: #F8FAF7;
+            --text-muted: #94A3B8;
+            --glass-bg: rgba(15, 23, 42, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.08);
+
+            /* Background Elements */
+            --bg-accent-1: rgba(59, 130, 246, 0.1);
+            --bg-accent-2: rgba(168, 85, 247, 0.05);
+            --bg-accent-3: rgba(255, 255, 255, 0.02);
+            --pattern-opacity: 0.08;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-main);
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+            transition: background-color 0.5s ease, color 0.5s ease;
+            min-height: 100vh;
+        }
+
+        /* 💎 macOS CRYSTAL-LIQUID VIBRANCY */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 15px 35px -5px rgba(0, 0, 0, 0.05),
+                0 5px 15px -5px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+
+        .dark .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(200%) brightness(0.8);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hover-lift {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .hover-lift:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 🏔️ HUD SYSTEM */
+        .clip-corners {
+            clip-path: polygon(
+                15px 0%, 100% 0%, 
+                100% calc(100% - 15px), 
+                calc(100% - 15px) 100%, 
+                0% 100%, 0% 15px
+            );
+        }
+
+        .hud-border {
+            position: relative;
+            border: 1px solid var(--glass-border);
+        }
+
+        .hud-border::before,
+        .hud-border::after {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: var(--primary);
+            border-style: solid;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.6;
+        }
+
+        .hud-border::before {
+            top: -1px;
+            left: -1px;
+            border-width: 2px 0 0 2px;
+        }
+
+        .hud-border::after {
+            bottom: -1px;
+            right: -1px;
+            border-width: 0 2px 2px 0;
+        }
+
+        /* Background Effects */
+        .dot-grid {
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(var(--text-muted) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: var(--pattern-opacity);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .tech-text {
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-family: monospace;
+        }
+
+        /* Scanline Effect */
+        .scanline::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(var(--primary-rgb), 0.02) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.3;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--background); }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    </style>
+</head>
+<body class="selection:bg-blue-500/30 dark scanline">
+    <div class="dot-grid"></div>
+    <div class="max-w-[1400px] mx-auto min-h-screen flex flex-col md:flex-row relative z-10">
+        <!-- Sidebar / Navigation -->
+        <aside class="w-full md:w-72 p-6 flex flex-col gap-8 border-r border-slate-800/10 glass">
+            <div class="flex items-center gap-3 px-2">
+                <div class="h-10 w-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg clip-corners-sm">
+                    <i data-lucide="graduation-cap" class="text-white h-6 w-6"></i>
+                </div>
+                <span class="text-2xl font-black tracking-tight text-main italic">KULINO <span class="text-primary">FLOW</span></span>
+            </div>
+
+            <nav class="flex flex-col gap-2">
+                <button onclick="filterType('all')" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600/10 text-blue-400 border border-blue-600/20 font-bold transition-all group nav-btn">
+                    <i data-lucide="layout-grid" class="h-5 w-5"></i>
+                    <span class="font-medium">Semua Aktivitas</span>
+                </button>
+                <button onclick="filterType('assignment')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white group nav-btn">
+                    <i data-lucide="list-checks" class="h-5 w-5 group-hover:text-purple-400"></i>
+                    <span class="font-medium">Daftar Tugas</span>
+                </button>
+                <button onclick="filterType('resource')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white group nav-btn">
+                    <i data-lucide="book-open" class="h-5 w-5 group-hover:text-emerald-400"></i>
+                    <span class="font-medium">Materi Kuliah</span>
+                </button>
+            </nav>
+
+            <div class="mt-auto glass p-6 rounded-2xl">
+                <p class="text-xs text-slate-500 mb-1">Status Kredensial</p>
+                <div class="flex items-center gap-2 text-emerald-400 font-semibold mb-3">
+                    <div class="h-2 w-2 bg-emerald-500 rounded-full"></div>
+                    Scraper Connected
+                </div>
+                <button onclick="window.location.reload()" class="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-all">
+                    Refresh Data
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0">
+            <!-- Top Header -->
+            <header class="h-20 border-b border-slate-800/50 flex items-center justify-between px-8 bg-slate-950/20 backdrop-blur-md sticky top-0 z-50">
+                <div class="relative w-full max-w-lg">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500"></i>
+                    <input type="text" id="search-input" placeholder="Cari tugas atau materi..." 
+                           class="search-input w-full pl-12 pr-4 py-2.5 rounded-xl text-sm"
+                           oninput="handleSearch()">
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <button onclick="toggleTheme()" class="h-10 w-10 glass rounded-xl flex items-center justify-center hover:scale-110 transition-all">
+                        <i data-lucide="sun" id="theme-icon" class="h-5 w-5 text-amber-500"></i>
+                    </button>
+                    <div class="hidden lg:flex flex-col items-end">
+                        <span class="tech-text text-[10px] text-muted font-black">System Status</span>
+                        <span id="last-update" class="text-sm font-bold text-primary opacity-80">Online</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats Bar -->
+            <div class="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass p-5 rounded-2xl border-l-4 border-rose-600">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Urgent (H-3)</span>
+                        <i data-lucide="alert-triangle" class="h-4 w-4 text-rose-500 animate-pulse"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-rose-400" id="stat-urgent">0</div>
+                </div>
+                <div class="glass p-5 rounded-2xl border-l-4 border-emerald-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Resources</span>
+                        <i data-lucide="book-open" class="h-4 w-4 text-emerald-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold" id="stat-resources">0</div>
+                </div>
+                <div class="glass p-5 rounded-2xl border-l-4 border-amber-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Mata Kuliah</span>
+                        <i data-lucide="graduation-cap" class="h-4 w-4 text-amber-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold" id="stat-courses">0</div>
+                </div>
+            </div>
+
+            <!-- Feed -->
+            <div class="px-8 pb-12 flex-1">
+                <div id="grid-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Cards will be injected here -->
+                    <div class="col-span-full h-96 flex flex-col items-center justify-center opacity-50">
+                        <div class="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
+                        <p class="font-medium">Syncing with Kulino...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let allData = [];
+        let filteredData = [];
+
+        async function init() {
+            lucide.createIcons();
+            await loadData();
+        }
+
+        async function loadData() {
+            try {
+                // Tampilkan loading spinner yang lebih bagus
+                const container = document.getElementById('grid-container');
+                container.innerHTML = `
+                    <div class="col-span-full h-96 flex flex-col items-center justify-center">
+                        <div class="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
+                        <p class="font-bold text-xl gradient-text animate-pulse">Menghubungkan ke Kulino Dinus...</p>
+                        <p class="text-slate-500 text-sm mt-2">Ini mungkin memakan waktu 10-30 detik untuk login dan scraping...</p>
+                    </div>
+                `;
+
+                const res = await fetch('/api/scrape');
+                if (!res.ok) throw new Error('Gagal mengambil data dari API');
+                allData = await res.json();
+                
+                // Sort by deadline: nearest first
+                allData.sort((a, b) => {
+                    if (a.deadlineTimestamp && b.deadlineTimestamp) return a.deadlineTimestamp - b.deadlineTimestamp;
+                    if (a.deadlineTimestamp) return -1;
+                    if (b.deadlineTimestamp) return 1;
+                    return 0;
+                });
+
+                filteredData = [...allData];
+                
+                updateStats();
+                renderGrid();
+            } catch (e) {
+                console.error(e);
+                document.getElementById('grid-container').innerHTML = `
+                    <div class="col-span-full text-center py-32 glass rounded-3xl border-dashed">
+                        <i data-lucide="alert-circle" class="h-12 w-12 text-red-500 mx-auto mb-4"></i>
+                        <h2 class="text-xl font-bold mb-2">Gagal Scraping Otomatis</h2>
+                        <p class="text-slate-400 max-w-md mx-auto">Pastikan kredensial <b>KULINO_USERNAME</b> dan <b>KULINO_PASSWORD</b> sudah diset di file <b>.env</b> (Lokal) atau <b>Environment Variables</b> (Vercel).</p>
+                        <p class="text-slate-500 text-xs mt-4">Jika baru pertama kali dijalankan, proses ini butuh waktu beberapa detik untuk login.</p>
+                        <button onclick="loadData()" class="mt-6 px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all font-medium text-sm">
+                            Coba Lagi
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function updateStats() {
+            const now = Date.now();
+            const h3 = 3 * 24 * 60 * 60 * 1000;
+            
+            const totalTasks = allData.filter(i => {
+                const type = (i.type || '').toLowerCase();
+                const title = (i.title || '').toLowerCase();
+                return type.includes('assign') || type.includes('tugas') || type.includes('quiz') || 
+                       title.includes('tugas') || title.includes('praktikum') || title.includes('pratikum') || title.includes('kuis');
+            });
+
+            const urgentTasks = totalTasks.filter(i => i.deadlineTimestamp && (i.deadlineTimestamp - now) <= h3 && (i.deadlineTimestamp - now) > 0);
+            const totalResources = allData.length - totalTasks.length;
+
+            document.getElementById('stat-urgent').innerText = urgentTasks.length;
+            document.getElementById('stat-resources').innerText = totalResources;
+            
+            const courses = new Set(allData.map(i => i.course));
+            document.getElementById('stat-courses').innerText = courses.size;
+
+            if (allData.length > 0) {
+                const date = new Date();
+                document.getElementById('last-update').innerText = date.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            }
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('grid-container');
+            if (filteredData.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500">Tidak ada data yang cocok dengan pencarian</div>`;
+                return;
+            }
+
+            // Group by Course
+            const groups = filteredData.reduce((acc, item) => {
+                if (!acc[item.course]) acc[item.course] = [];
+                acc[item.course].push(item);
+                return acc;
+            }, {});
+
+            container.innerHTML = Object.entries(groups).map(([courseName, items], gIdx) => {
+                const isTask = (i) => {
+                    const type = (i.type || '').toLowerCase();
+                    const title = (i.title || '').toLowerCase();
+                    return type.includes('assign') || type.includes('tugas') || type.includes('quiz') || 
+                           title.includes('tugas') || title.includes('praktikum') || title.includes('pratikum') || title.includes('kuis');
+                };
+
+                const assignments = items.filter(isTask);
+                const resources = items.filter(i => !isTask(i));
+                
+                if (assignments.length === 0 && resources.length === 0) return '';
+
+                const now = Date.now();
+                const h3 = 3 * 24 * 60 * 60 * 1000;
+
+                return `
+                <div class="col-span-full mb-16 animate-fade-in" style="animation-delay: ${gIdx * 100}ms">
+                    <!-- Course Header -->
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="h-10 w-2 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"></div>
+                        <h2 class="text-2xl font-black text-main tracking-tight italic clip-corners-sm bg-surface/50 px-4 py-1">${courseName}</h2>
+                        <div class="h-[1px] flex-1 bg-muted/20"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                        <!-- LEFT: ASSIGNMENTS -->
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-2 mb-4">
+                                <i data-lucide="list-checks" class="h-5 w-5 text-primary"></i>
+                                <h3 class="tech-text text-[10px] font-bold text-muted tracking-widest">Tugas & Praktikum</h3>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4">
+                                ${assignments.length > 0 ? assignments.map((item, idx) => {
+                                    const canUpload = (item.type || '').toLowerCase().includes('assign') || (item.type || '').toLowerCase().includes('tugas');
+                                    const isUrgent = item.deadlineTimestamp && (item.deadlineTimestamp - now) <= h3 && (item.deadlineTimestamp - now) > 0;
+                                    return `
+                                        <div class="glass p-6 clip-corners hud-border hover-lift flex flex-col group relative overflow-hidden">
+                                            ${isUrgent ? `<div class="absolute top-0 right-0 bg-rose-500 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest animate-pulse z-20">Urgent H-3</div>` : ''}
+                                            <h4 class="text-lg font-bold text-main group-hover:text-primary transition-colors mb-3">${item.title}</h4>
+                                            
+                                            ${item.deadline ? `
+                                                <div class="flex items-center gap-2 ${isUrgent ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : 'text-muted bg-surface/50 border-muted/20'} text-[11px] font-bold mb-4 w-fit px-3 py-1.5 rounded-lg border">
+                                                    <i data-lucide="clock" class="h-3.5 w-3.5"></i>
+                                                    <span>${item.deadline}</span>
+                                                </div>
+                                            ` : ''}
+
+                                            ${canUpload ? `
+                                                <div class="p-3 bg-surface/30 rounded-xl border border-muted/10 mb-3 mt-auto">
+                                                    <input type="file" id="file-${idx}-${gIdx}" class="tech-text text-[8px] text-muted mb-2 block w-full">
+                                                    <button onclick="submitTask('${item.url}', 'file-${idx}-${gIdx}')" 
+                                                            class="w-full py-2 bg-primary text-primary-fg rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 hover:brightness-125">
+                                                        <i data-lucide="upload" class="h-3.5 w-3.5"></i> Kirim
+                                                    </button>
+                                                </div>
+                                            ` : ''}
+                                            <a href="${item.url}" target="_blank" class="tech-text text-[9px] font-bold text-muted hover:text-primary transition-all flex items-center gap-1">
+                                                Access System <i data-lucide="external-link" class="h-2.5 w-2.5"></i>
+                                            </a>
+                                        </div>
+                                    `;
+                                }).join('') : `<div class="p-8 text-center glass clip-corners border-dashed text-muted text-sm">Tidak ada tugas aktif</div>`}
+                            </div>
+                        </div>
+
+                        <!-- RIGHT: MATERIALS -->
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-2 mb-4">
+                                <i data-lucide="book-open" class="h-5 w-5 text-secondary"></i>
+                                <h3 class="tech-text text-[10px] font-bold text-muted tracking-widest">Materi Kuliah</h3>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                ${resources.length > 0 ? resources.map(item => `
+                                    <div class="glass p-4 clip-corners hud-border hover-lift flex items-center gap-3">
+                                        <div class="h-8 w-8 flex-shrink-0 bg-primary/10 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="file" class="h-4 w-4 text-primary"></i>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="text-xs font-bold text-main truncate mb-1">${item.title}</h4>
+                                            <a href="${item.url}" target="_blank" class="tech-text text-[9px] text-primary hover:underline font-bold">Download</a>
+                                        </div>
+                                    </div>
+                                `).join('') : `<div class="col-span-full p-8 text-center glass clip-corners border-dashed text-muted text-sm">Belum ada materi</div>`}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        async function submitTask(url, inputId) {
+            const fileInput = document.getElementById(inputId);
+            const file = fileInput.files[0];
+            if (!file) return alert('Pilih file terlebih dahulu!');
+
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<div class="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full"></div> Mengirim...`;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('assignmentUrl', url);
+
+            try {
+                const res = await fetch('/api/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    alert('✅ ' + result.message);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (err) {
+                alert('🚨 Gagal: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function handleSearch() {
+            const term = document.getElementById('search-input').value.toLowerCase();
+            filteredData = allData.filter(item => 
+                item.title.toLowerCase().includes(term) || 
+                item.course.toLowerCase().includes(term) ||
+                (item.description && item.description.toLowerCase().includes(term))
+            );
+            renderGrid();
+        }
+
+        function filterType(type) {
+            // Update UI Active State
+            const btns = document.querySelectorAll('.nav-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-blue-600/10', 'text-blue-400', 'border-blue-600/20', 'font-bold');
+                b.classList.add('text-slate-300');
+            });
+            event.currentTarget.classList.add('bg-blue-600/10', 'text-blue-400', 'border-blue-600/20', 'font-bold');
+            event.currentTarget.classList.remove('text-slate-300');
+
+            if (type === 'all') {
+                filteredData = [...allData];
+            } else if (type === 'assignment') {
+                filteredData = allData.filter(i => {
+                    const typeStr = (i.type || '').toLowerCase();
+                    const titleStr = (i.title || '').toLowerCase();
+                    return typeStr.includes('assign') || typeStr.includes('tugas') || typeStr.includes('quiz') || 
+                           titleStr.includes('tugas') || titleStr.includes('praktikum') || titleStr.includes('pratikum') || titleStr.includes('kuis');
+                });
+            } else if (type === 'resource') {
+                filteredData = allData.filter(i => {
+                    const typeStr = (i.type || '').toLowerCase();
+                    const titleStr = (i.title || '').toLowerCase();
+                    const isTask = typeStr.includes('assign') || typeStr.includes('tugas') || typeStr.includes('quiz') || 
+                                   titleStr.includes('tugas') || titleStr.includes('praktikum') || titleStr.includes('pratikum') || titleStr.includes('kuis');
+                    return !isTask;
+                });
+            }
+            renderGrid();
+        }
+
+        function toggleTheme() {
+            const root = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            root.classList.toggle('dark');
+            const isDark = root.classList.contains('dark');
+            icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+
+        init();
+    </script>
+</body>
+</html>
