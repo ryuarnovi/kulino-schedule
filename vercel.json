@@ -4,6 +4,6 @@
     { "source": "/api/scrape", "destination": "/api/scrape.js" },
     { "source": "/api/submit", "destination": "/api/submit.js" },
     { "source": "/deadlines.json", "destination": "/deadlines.json" },
-    { "source": "/(.*)", "destination": "/$1" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
