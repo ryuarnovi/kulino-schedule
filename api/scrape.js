@@ -8,6 +8,18 @@ module.exports = async function handler(req, res) {
     const username = process.env.KULINO_USERNAME;
     const password = process.env.KULINO_PASSWORD;
 
+    // Load existing data for status sync
+    let historyMap = new Map();
+    try {
+        const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
+        if (fs.existsSync(dataPath)) {
+            const history = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+            history.forEach(t => {
+                if (t.isSubmitted) historyMap.set(t.url, true);
+            });
+        }
+    } catch (e) {}
+
     if (!username || !password) return res.status(401).json({ error: 'Missing Credentials' });
 
     let browser;
@@ -101,6 +113,12 @@ module.exports = async function handler(req, res) {
                 results = [...results, ...upcomingResults];
             } catch (e) {}
         }
+
+        // Final Sync with History
+        results = results.map(r => ({
+            ...r,
+            isSubmitted: historyMap.has(r.url) || false
+        }));
 
         await browser.close();
         return res.status(200).json(results);
