@@ -31,7 +31,6 @@ dist/
 
 # Project specific
 uploads/
-deadlines.json
 .agent/
 .gemini/
 .wwebjs_auth/
