@@ -229,17 +229,17 @@
             </header>
 
             <!-- Stats Bar -->
-            <div class="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="glass p-6 rounded-2xl border-l-4 border-rose-600 shadow-xl overflow-hidden group">
+            <div class="p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="glass p-6 rounded-2xl border-l-4 border-primary shadow-xl overflow-hidden group">
                     <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <i data-lucide="alert-triangle" class="h-24 w-24"></i>
+                        <i data-lucide="clipboard-list" class="h-24 w-24"></i>
                     </div>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Urgent (H-3)</span>
-                        <i data-lucide="alert-triangle" class="h-4 w-4 text-rose-500 animate-pulse"></i>
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Total Tugas</span>
+                        <i data-lucide="clipboard-list" class="h-4 w-4 text-primary"></i>
                     </div>
-                    <div class="text-3xl font-black text-rose-400" id="stat-urgent">0</div>
-                    <p class="text-[10px] text-slate-500 mt-2">Tugas mendekati batas waktu</p>
+                    <div class="text-3xl font-black" id="stat-total">0</div>
+                    <p class="text-[10px] text-slate-500 mt-2">Jumlah seluruh tugas terdeteksi</p>
                 </div>
                 
                 <div class="glass p-6 rounded-2xl border-l-4 border-amber-500 shadow-xl overflow-hidden group">
@@ -252,18 +252,6 @@
                     </div>
                     <div class="text-3xl font-black" id="stat-courses">0</div>
                     <p class="text-[10px] text-slate-500 mt-2">Bidang studi dengan tugas aktif</p>
-                </div>
-
-                <div class="glass p-6 rounded-2xl border-l-4 border-emerald-500 shadow-xl overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <i data-lucide="check-circle" class="h-24 w-24"></i>
-                    </div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Selesai</span>
-                        <i data-lucide="check-circle" class="h-4 w-4 text-emerald-500"></i>
-                    </div>
-                    <div class="text-3xl font-black text-emerald-400" id="stat-completed">0</div>
-                    <p class="text-[10px] text-slate-500 mt-2">Tugas yang telah dikumpulkan</p>
                 </div>
             </div>
 
@@ -341,17 +329,9 @@
         }
 
         function updateStats() {
-            const now = Date.now();
-            const h3 = 3 * 24 * 60 * 60 * 1000;
-            
-            const pendingTasks = allData.filter(i => !i.isSubmitted);
-            const urgentTasks = pendingTasks.filter(i => i.deadlineTimestamp && (i.deadlineTimestamp - now) <= h3 && (i.deadlineTimestamp - now) > 0);
-            const completedCount = allData.filter(i => i.isSubmitted).length;
             const courseSet = new Set(allData.map(i => i.course));
-
-            document.getElementById('stat-urgent').innerText = urgentTasks.length;
+            document.getElementById('stat-total').innerText = allData.length;
             document.getElementById('stat-courses').innerText = courseSet.size;
-            document.getElementById('stat-completed').innerText = completedCount;
 
             if (allData.length > 0) {
                 document.getElementById('last-update').innerText = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
