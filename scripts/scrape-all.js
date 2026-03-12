@@ -46,6 +46,12 @@ async function scrapeDeep() {
         await page.click('#loginbtn');
         await page.waitForURL('**/my/**', { timeout: 30000 });
 
+        // Get User Name for Forum detection
+        const userDisplayName = await page.evaluate(() => {
+            return document.querySelector('.userbutton .usertext')?.textContent?.trim() || '';
+        });
+        console.log(`👤 Welcome, ${userDisplayName}`);
+
         console.log('📅 Pindah ke Kalender (Month View)...');
         await page.waitForTimeout(2000);
         await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=month', { waitUntil: 'domcontentloaded' });
@@ -72,8 +78,8 @@ async function scrapeDeep() {
 
                 // Keywords check
                 const t = cleanTitle.toLowerCase();
-                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
-                if (!filter.some(f => t.includes(f)) && !url.includes('assign') && !url.includes('quiz')) continue;
+                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner'];
+                if (!filter.some(f => t.includes(f)) && !url.includes('assign') && !url.includes('quiz') && !url.includes('forum') && !url.includes('choice') && !url.includes('feedback') && !url.includes('survey') && !url.includes('workshop') && !url.includes('lti') && !url.includes('resource') && !url.includes('url')) continue;
 
                 const timestampMs = await ev.evaluate((el) => {
                     const td = el.closest('td.day');
@@ -106,6 +112,7 @@ async function scrapeDeep() {
                         course: modalData.courseName,
                         deadlineTimestamp: timestampMs,
                         url: activeUrl,
+                        type: activeUrl.includes('assign') ? 'assignment' : (activeUrl.includes('quiz') ? 'quiz' : (activeUrl.includes('forum') ? 'forum' : (activeUrl.includes('choice') || activeUrl.includes('feedback') || activeUrl.includes('survey') || activeUrl.includes('workshop') || activeUrl.includes('lti') || activeUrl.includes('resource') || activeUrl.includes('url') || t.includes('kegiatan') || t.includes('activity') ? 'student_activity' : 'activity'))),
                         scrapedAt: new Date().toISOString()
                     });
                 }
@@ -139,7 +146,7 @@ async function scrapeDeep() {
             console.log(`➡️ [${i + 1}/${currentTasks.length}] Inspeksi Detail: ${task.title}`);
             try {
                 await page.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-                const detail = await page.evaluate(() => {
+                const detail = await page.evaluate((userName) => {
                     let deadline = '';
                     let isSubmitted = false;
                     let description = document.querySelector('#intro .no-overflow')?.textContent?.trim() || '';
@@ -162,8 +169,17 @@ async function scrapeDeep() {
                         if (!quizBtn && document.body.innerText.toLowerCase().includes('quiz has been submitted')) isSubmitted = true;
                     }
 
+                    // Forum Detection: Check if user has posted
+                    if (!isSubmitted && userName && location.href.includes('mod/forum')) {
+                        const authors = Array.from(document.querySelectorAll('.author, .post-author, .user-name'));
+                        if (authors.some(a => a.textContent.includes(userName))) isSubmitted = true;
+                        
+                        // Check for "Your post has been added" or similar successful message
+                        if (document.body.innerText.includes('Your post has been added')) isSubmitted = true;
+                    }
+
                     return { description, isSubmitted, deadline };
-                });
+                }, userDisplayName);
 
                 task.description = detail.description;
                 task.isSubmitted = detail.isSubmitted;

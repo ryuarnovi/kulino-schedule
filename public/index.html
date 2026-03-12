@@ -192,6 +192,14 @@
                     <i data-lucide="check-circle" class="h-5 w-5 group-hover:text-emerald-400"></i>
                     <span class="font-medium">Sudah Selesai</span>
                 </button>
+                <button onclick="filterType('forum')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white group nav-btn">
+                    <i data-lucide="messages-square" class="h-5 w-5 group-hover:text-cyan-400"></i>
+                    <span class="font-medium">Forum</span>
+                </button>
+                <button onclick="filterType('student_activity')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white group nav-btn">
+                    <i data-lucide="award" class="h-5 w-5 group-hover:text-indigo-400"></i>
+                    <span class="font-medium">Kegiatan</span>
+                </button>
             </nav>
 
             <div class="mt-auto glass p-6 rounded-2xl">
@@ -377,6 +385,8 @@
                         ${items.map(item => {
                             const isDone = item.isSubmitted;
                             const isUrgent = !isDone && item.deadlineTimestamp && (item.deadlineTimestamp - now) <= h3 && (item.deadlineTimestamp - now) > 0;
+                            const isForum = item.type === 'forum';
+                            const isActivity = item.type === 'student_activity';
                             const deadlineLabel = item.deadline || (item.deadlineTimestamp ? new Date(item.deadlineTimestamp).toLocaleDateString() : '');
 
                             return `
@@ -388,7 +398,7 @@
                                     
                                     ${deadlineLabel ? `
                                         <div class="flex items-center gap-2 ${isDone ? 'text-emerald-400' : (isUrgent ? 'text-rose-400' : 'text-slate-500')} text-[10px] font-bold mb-4 bg-black/5 dark:bg-white/5 w-fit px-3 py-1.5 rounded-lg border border-black/5 dark:border-white/10 uppercase tracking-tighter">
-                                            <i data-lucide="${isDone ? 'check-circle' : 'clock'}" class="h-3.5 w-3.5"></i>
+                                            <i data-lucide="${isDone ? 'check-circle' : (isForum ? 'messages-square' : (isActivity ? 'award' : 'clock'))}" class="h-3.5 w-3.5"></i>
                                             <span>${isDone ? 'Sudah Dikumpulkan' : deadlineLabel}</span>
                                         </div>
                                     ` : ''}
@@ -436,6 +446,8 @@
                 const h3 = 3 * 24 * 60 * 60 * 1000;
                 filteredData = allData.filter(i => !i.isSubmitted && i.deadlineTimestamp && (i.deadlineTimestamp - now) <= h3 && (i.deadlineTimestamp - now) > 0);
             } else if (type === 'completed') filteredData = allData.filter(i => i.isSubmitted);
+            else if (type === 'forum') filteredData = allData.filter(i => i.type === 'forum');
+            else if (type === 'student_activity') filteredData = allData.filter(i => i.type === 'student_activity');
             
             renderGrid();
         }

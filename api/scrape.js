@@ -58,7 +58,7 @@ module.exports = async function handler(req, res) {
             await page.waitForSelector('.eventlist .event', { timeout: 3000 }).catch(() => {});
             
             results = await page.evaluate(() => {
-                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
+                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner'];
                 return Array.from(document.querySelectorAll('.eventlist .event')).map(ev => {
                     const titleLink = ev.querySelector('h3.name a') || ev.querySelector('a[href*="/mod/"]');
                     if (!titleLink) return null;
@@ -67,7 +67,7 @@ module.exports = async function handler(req, res) {
                     const url = titleLink.href;
                     
                     const t = title.toLowerCase();
-                    const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz');
+                    const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum') || url.includes('choice') || url.includes('feedback') || url.includes('survey') || url.includes('workshop') || url.includes('lti') || url.includes('resource') || url.includes('url');
                     if (!isTask) return null;
 
                     // Upcoming view has course link near the bottom
@@ -78,7 +78,7 @@ module.exports = async function handler(req, res) {
                         id: ev.getAttribute('data-event-id') || url,
                         title, url,
                         course: courseName,
-                        type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
+                        type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : (url.includes('forum') ? 'forum' : (url.includes('choice') || url.includes('feedback') || url.includes('survey') || url.includes('workshop') || url.includes('lti') || url.includes('resource') || url.includes('url') || t.includes('kegiatan') || t.includes('activity') ? 'student_activity' : 'activity'))),
                         scrapedAt: new Date().toISOString()
                     };
                 }).filter(i => i);
@@ -92,7 +92,7 @@ module.exports = async function handler(req, res) {
                 await page.waitForSelector('.calendartable', { timeout: 2000 }).catch(() => {});
                 
                 const monthResults = await page.evaluate(() => {
-                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project'];
+                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner'];
                     const events = Array.from(document.querySelectorAll('a[data-action="view-event"]'));
                     return events.map(ev => {
                         const rawTitle = ev.getAttribute('title') || '';
@@ -100,7 +100,7 @@ module.exports = async function handler(req, res) {
                         let title = rawTitle.replace(' is due', '').replace(' opens', '').trim();
                         
                         const t = title.toLowerCase();
-                        const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz');
+                        const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum') || url.includes('choice') || url.includes('feedback') || url.includes('survey') || url.includes('workshop') || url.includes('lti') || url.includes('resource') || url.includes('url');
                         if (!isTask) return null;
 
                         const parentDay = ev.closest('td.day');
@@ -118,9 +118,9 @@ module.exports = async function handler(req, res) {
                             title, url,
                             course: courseName,
                             deadlineTimestamp: timestamp,
-                            type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
-                            scrapedAt: new Date().toISOString()
-                        };
+                        type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : (url.includes('forum') ? 'forum' : (url.includes('choice') || url.includes('feedback') || url.includes('survey') || url.includes('workshop') || url.includes('lti') || url.includes('resource') || url.includes('url') || t.includes('kegiatan') || t.includes('activity') ? 'student_activity' : 'activity'))),
+                        scrapedAt: new Date().toISOString()
+                    };
                     }).filter(i => i);
                 });
                 results = [...results, ...monthResults];
