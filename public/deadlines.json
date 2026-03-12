@@ -16,7 +16,8 @@
     "course": "[20252] SISTEM BASIS DATA - A11.44RPL",
     "deadlineTimestamp": 1773791940000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1798460",
-    "scrapedAt": "2026-03-12T02:25:06.719Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:49:56.652Z",
     "description": "Tugas ke-1 tersedia di Materi slide yang ke-34",
     "isSubmitted": false,
     "deadline": "Tuesday, 17 March 2026, 11:59 PM"
@@ -38,7 +39,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797116",
-    "scrapedAt": "2026-03-12T02:25:13.617Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:03.051Z",
     "description": "Buat 5 class yang masing masing memiliki 5 attribute. Buatkan juga 3 objek dari masing masing class. Tulis di kertas, foto lalu kumpulkan",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -49,7 +51,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797129",
-    "scrapedAt": "2026-03-12T02:25:14.427Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:03.874Z",
     "description": "Buatkan Class Diagram yang menerapkan class, attribute, method dan objek. Buat 1 class dengan 3 objek",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -60,7 +63,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797130",
-    "scrapedAt": "2026-03-12T02:25:15.243Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:04.684Z",
     "description": "Kerjakan:\n\n\nPraktikum 1: Latihan 2\nPraktikum 2: Latihan 1 dan Latihan 2\n\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -71,7 +75,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797131",
-    "scrapedAt": "2026-03-12T02:25:16.059Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:05.518Z",
     "description": "Buatkan Class Diagram yang menerapkan class, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -82,7 +87,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797133",
-    "scrapedAt": "2026-03-12T02:25:16.888Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:06.328Z",
     "description": "Kerjakan:\n\n\nPraktikum 3: Latihan 3 dan Latihan 4\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -93,7 +99,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797134",
-    "scrapedAt": "2026-03-12T02:25:17.702Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:07.140Z",
     "description": "Terapkan dari Class Diagram yang dibuat dari Tugas Teori 3.Kirim foto class diagram, source code dan hasil run dalam 1 pdf",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -104,7 +111,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797146",
-    "scrapedAt": "2026-03-12T02:25:18.515Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:07.948Z",
     "description": "Buatkan Class Diagram yang menerapkan class, construct, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -115,7 +123,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797149",
-    "scrapedAt": "2026-03-12T02:25:19.326Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:08.759Z",
     "description": "Kerjakan:\n\n\nPraktikum 4: Latihan 3 dan Latihan 4\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -126,7 +135,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797154",
-    "scrapedAt": "2026-03-12T02:25:20.137Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:09.568Z",
     "description": "Buat penerapan dari class diagram teori 4. Kirim dalam bentuk pdf, screenshot source code dan hasil run",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -137,7 +147,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797160",
-    "scrapedAt": "2026-03-12T02:25:20.945Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:10.374Z",
     "description": "Kerjakan:\n\n\nPraktikum 5: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -148,7 +159,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797161",
-    "scrapedAt": "2026-03-12T02:25:21.758Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:11.190Z",
     "description": "Buatkan Class Diagram yang menerapkan inheritence overriding lalu buat class, construct, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -159,7 +171,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797163",
-    "scrapedAt": "2026-03-12T02:25:23.074Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:12.006Z",
     "description": "Kerjakan:\n\n\nPraktikum 6: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -170,7 +183,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797168",
-    "scrapedAt": "2026-03-12T02:25:23.885Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:13.315Z",
     "description": "Kerjakan:\n\n\nPraktikum 7: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -181,7 +195,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797185",
-    "scrapedAt": "2026-03-12T02:25:24.700Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:14.124Z",
     "description": "",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -192,7 +207,8 @@
     "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797186",
-    "scrapedAt": "2026-03-12T02:25:25.512Z",
+    "type": "assignment",
+    "scrapedAt": "2026-03-12T04:50:14.932Z",
     "description": "",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
