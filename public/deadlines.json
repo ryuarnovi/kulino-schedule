@@ -6,7 +6,7 @@
     "deadlineTimestamp": 1773614220000,
     "url": "https://kulino.dinus.ac.id/mod/quiz/view.php?id=1823752",
     "type": "quiz",
-    "scrapedAt": "2026-03-12T07:52:34.800Z",
+    "scrapedAt": "2026-03-12T08:50:25.665Z",
     "description": "Quiz 1 untuk mengevaluasi Pertemuan Minggu 1 dan 2",
     "isSubmitted": false,
     "deadline": "Sunday, 15 March 2026, 10:37 PM"
@@ -14,11 +14,11 @@
   {
     "id": "280724",
     "title": "Tugas Ke-1",
-    "course": "[20252] SISTEM BASIS DATA - A11.44RPL",
+    "course": "",
     "deadlineTimestamp": 1773791940000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1798460",
     "type": "assignment",
-    "scrapedAt": "2026-03-12T07:52:35.612Z",
+    "scrapedAt": "2026-03-12T08:50:30.694Z",
     "description": "Tugas ke-1 tersedia di Materi slide yang ke-34",
     "isSubmitted": false,
     "deadline": "Tuesday, 17 March 2026, 11:59 PM"
