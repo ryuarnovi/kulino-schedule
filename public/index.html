@@ -21,8 +21,8 @@
             --background-rgb: 248, 250, 252;
             --text-main: #0F172A;
             --text-muted: #475569;
-            --glass-bg: rgba(255, 255, 255, 0.9); 
-            --glass-border: rgba(15, 23, 42, 0.12);
+            --glass-bg: rgba(255, 255, 255, 0.95); 
+            --glass-border: rgba(15, 23, 42, 0.08);
             
             /* Background Elements */
             --bg-accent-1: rgba(59, 130, 246, 0.05);
@@ -140,9 +140,10 @@
         }
 
         .tech-text {
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            font-family: monospace;
+            font-family: inherit;
+            font-weight: 800;
         }
 
         .scanline::after {
@@ -171,7 +172,7 @@
     <div class="dot-grid"></div>
     <div class="max-w-[1400px] mx-auto min-h-screen flex flex-col md:flex-row relative z-10">
         <!-- Sidebar -->
-        <aside class="w-full md:w-72 p-6 flex flex-col gap-8 border-r border-slate-800/10 glass">
+        <aside class="w-full md:w-64 lg:w-72 p-6 flex flex-col gap-8 border-r border-slate-800/10 glass shrink-0">
             <div class="flex items-center gap-3 px-2">
                 <div class="h-10 w-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg clip-corners-sm">
                     <i data-lucide="graduation-cap" class="text-white h-6 w-6"></i>
@@ -180,25 +181,17 @@
             </div>
 
             <nav class="flex flex-col gap-2">
-                <button onclick="filterType('all')" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600/10 text-blue-400 border border-blue-600/20 font-bold transition-all group nav-btn">
+                <button onclick="filterType('all')" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600/10 text-blue-500 border border-blue-600/20 font-bold transition-all group nav-btn w-full">
                     <i data-lucide="layout-grid" class="h-5 w-5"></i>
                     <span class="font-medium">Semua Tugas</span>
                 </button>
-                <button onclick="filterType('urgent')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white group nav-btn">
-                    <i data-lucide="alert-triangle" class="h-5 w-5 group-hover:text-rose-400"></i>
+                <button onclick="filterType('urgent')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white group nav-btn w-full">
+                    <i data-lucide="alert-triangle" class="h-5 w-5 group-hover:text-rose-500"></i>
                     <span class="font-medium">Mendekati Deadline</span>
                 </button>
-                <button onclick="filterType('completed')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white group nav-btn">
-                    <i data-lucide="check-circle" class="h-5 w-5 group-hover:text-emerald-400"></i>
+                <button onclick="filterType('completed')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white group nav-btn">
+                    <i data-lucide="check-circle" class="h-5 w-5 group-hover:text-emerald-500"></i>
                     <span class="font-medium">Sudah Selesai</span>
-                </button>
-                <button onclick="filterType('forum')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white group nav-btn">
-                    <i data-lucide="messages-square" class="h-5 w-5 group-hover:text-cyan-400"></i>
-                    <span class="font-medium">Forum</span>
-                </button>
-                <button onclick="filterType('student_activity')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-slate-300 hover:text-white group nav-btn">
-                    <i data-lucide="award" class="h-5 w-5 group-hover:text-indigo-400"></i>
-                    <span class="font-medium">Kegiatan</span>
                 </button>
             </nav>
 
@@ -237,34 +230,58 @@
             </header>
 
             <!-- Stats Bar -->
-            <div class="p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="glass p-6 rounded-2xl border-l-4 border-primary shadow-xl overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <i data-lucide="clipboard-list" class="h-24 w-24"></i>
+            <div class="px-8 pt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass p-5 rounded-2xl border-l-4 border-primary shadow-lg overflow-hidden group">
+                    <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <i data-lucide="clipboard-list" class="h-16 w-16"></i>
                     </div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Total Tugas</span>
-                        <i data-lucide="clipboard-list" class="h-4 w-4 text-primary"></i>
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">Total Tugas</span>
+                        <i data-lucide="clipboard-list" class="h-3.5 w-3.5 text-primary"></i>
                     </div>
-                    <div class="text-3xl font-black" id="stat-total">0</div>
-                    <p class="text-[10px] text-slate-500 mt-2">Jumlah seluruh tugas terdeteksi</p>
+                    <div class="text-2xl font-black" id="stat-total">0</div>
+                    <p class="text-[9px] text-slate-400 mt-1">Seluruh tugas</p>
                 </div>
                 
-                <div class="glass p-6 rounded-2xl border-l-4 border-amber-500 shadow-xl overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <i data-lucide="graduation-cap" class="h-24 w-24"></i>
+                <div class="glass p-5 rounded-2xl border-l-4 border-amber-500 shadow-lg overflow-hidden group">
+                    <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <i data-lucide="graduation-cap" class="h-16 w-16"></i>
                     </div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Mata Kuliah</span>
-                        <i data-lucide="graduation-cap" class="h-4 w-4 text-amber-500"></i>
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">Mata Kuliah</span>
+                        <i data-lucide="graduation-cap" class="h-3.5 w-3.5 text-amber-500"></i>
                     </div>
-                    <div class="text-3xl font-black" id="stat-courses">0</div>
-                    <p class="text-[10px] text-slate-500 mt-2">Bidang studi dengan tugas aktif</p>
+                    <div class="text-2xl font-black" id="stat-courses">0</div>
+                    <p class="text-[9px] text-slate-400 mt-1">Bidang studi aktif</p>
+                </div>
+
+                <div class="glass p-5 rounded-2xl border-l-4 border-rose-500 shadow-lg overflow-hidden group">
+                    <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <i data-lucide="alert-circle" class="h-16 w-16"></i>
+                    </div>
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">Urgent</span>
+                        <i data-lucide="alert-circle" class="h-3.5 w-3.5 text-rose-500"></i>
+                    </div>
+                    <div class="text-2xl font-black" id="stat-urgent">0</div>
+                    <p class="text-[9px] text-slate-400 mt-1">Deadline dekat</p>
+                </div>
+
+                <div class="glass p-5 rounded-2xl border-l-4 border-emerald-500 shadow-lg overflow-hidden group">
+                    <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <i data-lucide="check-circle" class="h-16 w-16"></i>
+                    </div>
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">Selesai</span>
+                        <i data-lucide="check-circle" class="h-3.5 w-3.5 text-emerald-500"></i>
+                    </div>
+                    <div class="text-2xl font-black" id="stat-done">0</div>
+                    <p class="text-[9px] text-slate-400 mt-1">Tugas disubmit</p>
                 </div>
             </div>
 
             <!-- Dashboard Grid -->
-            <div class="px-8 pb-12 overflow-y-auto">
+            <div class="px-8 pb-12 pt-4 overflow-y-auto">
                 <div id="grid-container" class="space-y-12">
                      <div class="flex flex-col items-center justify-center py-20 opacity-50">
                         <div class="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
@@ -338,8 +355,15 @@
 
         function updateStats() {
             const courseSet = new Set(allData.map(i => i.course));
+            const now = Date.now();
+            const h3 = 3 * 24 * 60 * 60 * 1000;
+            const urgentCount = allData.filter(i => !i.isSubmitted && i.deadlineTimestamp && (i.deadlineTimestamp - now) <= h3 && (i.deadlineTimestamp - now) > 0).length;
+            const doneCount = allData.filter(i => i.isSubmitted).length;
+
             document.getElementById('stat-total').innerText = allData.length;
             document.getElementById('stat-courses').innerText = courseSet.size;
+            document.getElementById('stat-urgent').innerText = urgentCount;
+            document.getElementById('stat-done').innerText = doneCount;
 
             if (allData.length > 0) {
                 document.getElementById('last-update').innerText = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
@@ -350,9 +374,12 @@
             const container = document.getElementById('grid-container');
             if (filteredData.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-32 glass rounded-3xl border-dashed opacity-50">
-                        <i data-lucide="clipboard-list" class="h-12 w-12 mx-auto mb-4"></i>
-                        <p class="font-bold tech-text">Tidak ada data ditemukan</p>
+                    <div class="flex flex-col items-center justify-center py-32 opacity-40">
+                        <div class="p-8 rounded-full bg-slate-500/5 mb-6">
+                            <i data-lucide="clipboard-x" class="h-16 w-16 text-slate-400"></i>
+                        </div>
+                        <h3 class="text-xl font-black tech-text tracking-widest text-slate-500">DATA KOSONG</h3>
+                        <p class="text-sm mt-2 text-slate-400">Tidak ada tugas dalam kategori ini</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -375,9 +402,9 @@
                 <div class="animate-fade-in" style="animation-delay: ${gIdx * 50}ms">
                     <div class="flex items-center gap-4 mb-6">
                         <div class="h-10 w-1.5 bg-primary rounded-full"></div>
-                        <h2 class="text-xl font-black text-main flex items-center gap-2 italic">
+                        <h2 class="text-lg font-black text-main flex items-center gap-2 italic">
                             ${courseName}
-                            <span class="text-[10px] text-slate-500 font-mono not-italic bg-surface px-2 rounded-full border border-slate-200 dark:border-slate-800">${items.length} Tasks</span>
+                            <span class="text-[9px] text-slate-400 dark:text-slate-500 font-bold not-italic bg-black/5 dark:bg-white/5 px-2.5 py-0.5 rounded-full border border-black/5 dark:border-white/10 tracking-widest uppercase">${items.length} Tasks</span>
                         </h2>
                     </div>
 
@@ -385,8 +412,6 @@
                         ${items.map(item => {
                             const isDone = item.isSubmitted;
                             const isUrgent = !isDone && item.deadlineTimestamp && (item.deadlineTimestamp - now) <= h3 && (item.deadlineTimestamp - now) > 0;
-                            const isForum = item.type === 'forum';
-                            const isActivity = item.type === 'student_activity';
                             const deadlineLabel = item.deadline || (item.deadlineTimestamp ? new Date(item.deadlineTimestamp).toLocaleDateString() : '');
 
                             return `
@@ -398,7 +423,7 @@
                                     
                                     ${deadlineLabel ? `
                                         <div class="flex items-center gap-2 ${isDone ? 'text-emerald-400' : (isUrgent ? 'text-rose-400' : 'text-slate-500')} text-[10px] font-bold mb-4 bg-black/5 dark:bg-white/5 w-fit px-3 py-1.5 rounded-lg border border-black/5 dark:border-white/10 uppercase tracking-tighter">
-                                            <i data-lucide="${isDone ? 'check-circle' : (isForum ? 'messages-square' : (isActivity ? 'award' : 'clock'))}" class="h-3.5 w-3.5"></i>
+                                            <i data-lucide="${isDone ? 'check-circle' : 'clock'}" class="h-3.5 w-3.5"></i>
                                             <span>${isDone ? 'Sudah Dikumpulkan' : deadlineLabel}</span>
                                         </div>
                                     ` : ''}
@@ -434,11 +459,11 @@
         function filterType(type) {
             const btns = document.querySelectorAll('.nav-btn');
             btns.forEach(b => {
-                b.classList.remove('bg-blue-600/10', 'text-blue-400', 'border-blue-600/20', 'font-bold');
-                b.classList.add('text-slate-300');
+                b.classList.remove('bg-blue-600/10', 'text-blue-500', 'border-blue-600/20', 'font-bold');
+                b.classList.add('text-slate-500', 'dark:text-slate-300');
             });
-            event.currentTarget.classList.add('bg-blue-600/10', 'text-blue-400', 'border-blue-600/20', 'font-bold');
-            event.currentTarget.classList.remove('text-slate-300');
+            event.currentTarget.classList.add('bg-blue-600/10', 'text-blue-500', 'border-blue-600/20', 'font-bold');
+            event.currentTarget.classList.remove('text-slate-500', 'dark:text-slate-300');
 
             if (type === 'all') filteredData = [...allData];
             else if (type === 'urgent') {
