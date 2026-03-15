@@ -87,23 +87,25 @@ module.exports = async function handler(req, res) {
                         const url = ev.href;
                         const title = rawTitle.replace(' is due', '').replace(' opens', '').trim();
                         
-                        // Check if it's a task or relevant activity
                         const isTask = filter.some(f => title.toLowerCase().includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum');
                         if (!isTask) return null;
 
                         const parentDay = ev.closest('td.day');
                         const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
                         
-                        // Detect "Done" status from icon or text
-                        // Moodle often uses classes like 'completed' or checkmark icons
-                        const hasCheckmark = !!ev.querySelector('.icon[title*="Done"], .icon[title*="Selesai"], .fa-check-circle');
-                        const isDimmed = window.getComputedStyle(ev).opacity < 0.8;
-                        const isSubmitted = hasCheckmark || isDimmed;
+                        // ENHANCED COMPLETION DETECTION
+                        // Look for: checkmark icons, "Done" badges, or dimmed opacity
+                        const hasCheckmark = !!ev.querySelector('.icon[title*="Done"], .icon[title*="Selesai"], .fa-check, .fa-check-circle, .completionicon[title*="Done"]');
+                        const hasBadge = !!ev.querySelector('.badge-success, .badge-info, .badge.completion-badge');
+                        const isDimmed = window.getComputedStyle(ev).opacity < 0.7; // Lower threshold to be sure
+                        
+                        // Check if parent element indicates completion
+                        const parentText = ev.parentElement ? ev.parentElement.innerText.toLowerCase() : "";
+                        const textIndicatesDone = parentText.includes('selesai') || parentText.includes('done') || parentText.includes('terselesaikan');
 
-                        let courseName = "";
-                        if (rawTitle.includes(':')) {
-                            courseName = rawTitle.split(':')[0].trim();
-                        }
+                        const isSubmitted = hasCheckmark || hasBadge || isDimmed || textIndicatesDone;
+
+                        let courseName = rawTitle.includes(':') ? rawTitle.split(':')[0].trim() : "";
 
                         return {
                             id: ev.getAttribute('data-event-id'),
@@ -119,7 +121,7 @@ module.exports = async function handler(req, res) {
             } catch (e) { return []; }
         };
 
-        // A. Upcoming View (For immediate tasks)
+        // A. Upcoming View (Check for explicit completion text)
         try {
             await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 8000 });
             const upcoming = await page.evaluate(() => {
@@ -130,8 +132,15 @@ module.exports = async function handler(req, res) {
                     const url = titleLink.href;
                     
                     const courseLink = ev.querySelector('a[href*="course/view.php?id="]');
-                    const footer = ev.innerText.toLowerCase();
-                    const isSubmitted = footer.includes('submitted') || footer.includes('terselesaikan') || footer.includes('sudah dikumpulkan');
+                    const rawContent = ev.innerText.toLowerCase();
+                    
+                    // Detect "Done" from upcoming list specifically
+                    const isSubmitted = rawContent.includes('submitted') || 
+                                      rawContent.includes('terselesaikan') || 
+                                      rawContent.includes('sudah dikumpulkan') ||
+                                      rawContent.includes('done') ||
+                                      !!ev.querySelector('.badge-success') ||
+                                      !!ev.querySelector('.icon[title*="Done"]');
 
                     return {
                         id: ev.getAttribute('data-event-id') || url,
@@ -176,7 +185,6 @@ module.exports = async function handler(req, res) {
         } catch (e) {}
 
         // Final Sync with History (Preserve items that weren't found in current scrape but exist in history)
-        // This ensures the list only grows unless explicitly cleaned
         let finalResults = Array.from(resultsMap.values());
         
         try {
@@ -184,13 +192,13 @@ module.exports = async function handler(req, res) {
             if (fs.existsSync(dataPath)) {
                 const history = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
                 history.forEach(oldItem => {
-                    if (!resultsMap.has(oldItem.url)) {
+                    const existing = resultsMap.get(oldItem.url);
+                    if (!existing) {
                         finalResults.push(oldItem);
                     } else {
-                        // If it's in both, ensure isSubmitted is synced if it was done in history
-                        const current = resultsMap.get(oldItem.url);
-                        if (oldItem.isSubmitted && !current.isSubmitted) {
-                            current.isSubmitted = true;
+                        // Priority: If either history or current scrape says it's done, it's DONE
+                        if (oldItem.isSubmitted) {
+                            existing.isSubmitted = true;
                         }
                     }
                 });
