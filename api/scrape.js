@@ -87,40 +87,36 @@ module.exports = async function handler(req, res) {
                         const url = ev.href;
                         const title = rawTitle.replace(' is due', '').replace(' opens', '').trim();
                         
+                        // Clean URL for unique key
+                        let cleanUrl = url.split('?')[0];
+                        if (url.includes('id=')) {
+                            const idMatch = url.match(/id=(\d+)/);
+                            if (idMatch) cleanUrl += '?id=' + idMatch[1];
+                        }
+
                         const isTask = filter.some(f => title.toLowerCase().includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum');
                         if (!isTask) return null;
 
                         const parentDay = ev.closest('td.day');
                         const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
                         
-                        // MOODLE 4+ COMPLETION DETECTION
-                        // Look for green buttons, badges, or specific classes in the event or its siblings/parent
-                        const hasGreenButton = !!ev.querySelector('.btn-success, .btn-outline-success.active, .badge-success');
-                        const hasCheckIcon = !!ev.querySelector('.icon[title*="Done"], .icon[title*="Selesai"], .fa-check, .fa-check-circle, .completionicon[title*="Done"]');
-                        
-                        // Sometimes the status is in a sibling or the container
-                        const container = ev.closest('.event, .calendar-event, td.day');
-                        const containerHtml = container ? container.innerHTML.toLowerCase() : "";
-                        const containerText = container ? container.innerText.toLowerCase() : "";
-                        
-                        const indicatesDone = hasGreenButton || 
-                                             hasCheckIcon || 
-                                             containerHtml.includes('btn-success') || 
-                                             containerHtml.includes('badge-success') ||
-                                             containerText.includes('selesai') || 
-                                             containerText.includes('done') || 
-                                             containerText.includes('terselesaikan');
-                                             containerText.includes('submitted');
-                                             containerText.includes('complete')
-
+                        // MOODLE 4+ COMPLETION DETECTION (Deep Scan in Container)
+                        const container = ev.closest('.calendar-event, .event') || ev.parentElement;
+                        const hasGreenIndicator = !!container.querySelector('.btn-success, .badge-success, .btn-outline-success.active, .completionicon[title*="Done"], .icon[title*="Done"]');
                         const isDimmed = window.getComputedStyle(ev).opacity < 0.8;
-                        const isSubmitted = indicatesDone || isDimmed;
+                        const isSubmitted = hasGreenIndicator || isDimmed || container.innerText.toLowerCase().includes('done') || container.innerText.toLowerCase().includes('selesai');
 
-                        let courseName = rawTitle.includes(':') ? rawTitle.split(':')[0].trim() : "";
+                        let courseName = "";
+                        if (rawTitle.includes(':')) {
+                            courseName = rawTitle.split(':')[0].trim();
+                        } else if (rawTitle.includes(' - ')) {
+                            courseName = rawTitle.split(' - ')[0].trim();
+                        }
 
                         return {
                             id: ev.getAttribute('data-event-id'),
-                            title, url,
+                            title, 
+                            url: cleanUrl,
                             course: courseName,
                             deadlineTimestamp: timestamp,
                             isSubmitted: isSubmitted,

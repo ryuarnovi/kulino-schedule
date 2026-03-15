@@ -367,7 +367,33 @@
                     const freshData = await res.json();
                     
                     if (Array.isArray(freshData) && freshData.length > 0) {
-                        allData = freshData;
+                        // SMART MERGE: Don't just replace, merge carefully
+                        const newDataMap = new Map();
+                        
+                        // Map old data for easy lookup
+                        const oldDataMap = new Map();
+                        allData.forEach(item => oldDataMap.set(item.url, item));
+                        
+                        freshData.forEach(item => {
+                            if (!item.url) return;
+                            const existing = oldDataMap.get(item.url);
+                            if (existing) {
+                                // Keep old course name if fresh one is missing
+                                if (!item.course && existing.course) item.course = existing.course;
+                                // Keep completion status if either one has it
+                                item.isSubmitted = item.isSubmitted || existing.isSubmitted;
+                            }
+                            newDataMap.set(item.url, item);
+                        });
+                        
+                        // Add items from old data that aren't in fresh data (history preservation)
+                        allData.forEach(item => {
+                            if (!newDataMap.has(item.url)) {
+                                newDataMap.set(item.url, item);
+                            }
+                        });
+                        
+                        allData = Array.from(newDataMap.values());
                         allData.sort((a, b) => (a.deadlineTimestamp || 0) - (b.deadlineTimestamp || 0));
                         filteredData = [...allData];
                     }
