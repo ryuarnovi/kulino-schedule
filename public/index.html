@@ -294,6 +294,7 @@
         let allData = [];
         let filteredData = [];
         let syncCountdown = 300; // 5 minutes in seconds
+        let manualArchives = JSON.parse(localStorage.getItem('manualArchives') || '[]');
 
         let isLoadingData = false;
 
@@ -340,6 +341,10 @@
                         const cached = await res.json().catch(() => []);
                         if (cached.length) {
                             allData = cached;
+                            // Apply manual archives and normalize early
+                            allData.forEach(item => {
+                                if (manualArchives.includes(item.url)) item.isSubmitted = true;
+                            });
                             allData.sort((a, b) => (a.deadlineTimestamp || 0) - (b.deadlineTimestamp || 0));
                             filteredData = [...allData];
                             updateStats();
@@ -408,6 +413,14 @@
                         });
                         
                         allData = Array.from(newDataMap.values());
+                        
+                        // Apply Manual Archives
+                        allData.forEach(item => {
+                            if (manualArchives.includes(item.url)) {
+                                item.isSubmitted = true;
+                            }
+                        });
+
                         allData.sort((a, b) => (a.deadlineTimestamp || 0) - (b.deadlineTimestamp || 0));
                         filteredData = [...allData];
                     }
@@ -521,10 +534,16 @@
                                             <span class="tech-text text-[8px] opacity-20">${item.type || 'TASK'}</span>
                                         </div>
 
-                                        <a href="${item.url}" target="_blank" class="w-full flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 transition-all clip-corners-sm tech-text text-[9px] font-black group/link">
-                                            ACCESS_SYSTEM
-                                            <i data-lucide="arrow-right" class="h-3 w-3 group-hover/link:translate-x-1 transition-transform text-accent"></i>
-                                        </a>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <a href="${item.url}" target="_blank" class="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 transition-all clip-corners-sm tech-text text-[9px] font-black group/link">
+                                                ACCESS
+                                                <i data-lucide="external-link" class="h-3 w-3 group-hover/link:translate-x-0.5 transition-transform text-accent"></i>
+                                            </a>
+                                            <button onclick="toggleArchive('${item.url}')" class="flex items-center justify-between p-3 ${isDone ? 'bg-emerald-500/20 text-emerald-500' : 'bg-white/5 opacity-40 hover:opacity-100'} transition-all clip-corners-sm tech-text text-[9px] font-black group/check">
+                                                ${isDone ? 'UNDO' : 'DONE'}
+                                                <i data-lucide="${isDone ? 'rotate-ccw' : 'check'}" class="h-3 w-3"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             `;
@@ -567,6 +586,26 @@
             const isDark = root.classList.contains('dark');
             icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
             lucide.createIcons();
+        }
+
+        function toggleArchive(url) {
+            const index = manualArchives.indexOf(url);
+            if (index === -1) {
+                manualArchives.push(url);
+            } else {
+                manualArchives.splice(index, 1);
+            }
+            localStorage.setItem('manualArchives', JSON.stringify(manualArchives));
+            
+            // Apply immediately to local data
+            allData.forEach(item => {
+                if (item.url === url) {
+                    item.isSubmitted = (index === -1);
+                }
+            });
+            
+            updateStats();
+            renderGrid();
         }
 
         init();
