@@ -86,13 +86,36 @@ module.exports = async function handler(req, res) {
             } catch (e) { return u.split('?')[0]; }
         };
 
+        // 1. Get Course ID Map from Dashboard (Higher reliability)
+        let courseIdMap = {};
+        try {
+            await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 10000 });
+            courseIdMap = await page.evaluate(() => {
+                const map = {};
+                // Look for course cards or sidebar links
+                const selectors = ['a[href*="course/view.php?id="]', '.course-listitem a', '.course-card a'];
+                selectors.forEach(s => {
+                    document.querySelectorAll(s).forEach(a => {
+                        const url = a.href;
+                        const id = new URL(url).searchParams.get('id');
+                        let name = a.innerText.trim();
+                        // Clean up name (remove 'Course' prefix or similar)
+                        name = name.split('\n')[0].replace(/^Course:\s+/i, '').trim();
+                        if (id && name && name.length > 5) map[id] = name;
+                    });
+                });
+                return map;
+            });
+        } catch(e) {}
+
         // Utility to scrape a month view
         const scrapeMonth = async (targetUrl) => {
             try {
                 await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
-                return await page.evaluate(() => {
+                let items = await page.evaluate((cidMap) => {
                     const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner', 'materi', 'kuliah'];
                     const events = Array.from(document.querySelectorAll('a[data-action="view-event"]'));
+                    
                     return events.map(ev => {
                         const rawTitle = ev.getAttribute('title') || '';
                         const url = ev.href;
@@ -101,40 +124,31 @@ module.exports = async function handler(req, res) {
                         const isTask = filter.some(f => title.toLowerCase().includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum');
                         if (!isTask) return null;
 
-                        const parentDay = ev.closest('td.day');
-                        const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
-                        
-                        // MOODLE 4+ COMPLETION DETECTION
                         const dayCell = ev.closest('td.day');
                         const container = ev.closest('.calendar-event') || ev.closest('.event') || ev.parentElement;
-                        const dayHtml = dayCell ? dayCell.innerHTML.toLowerCase() : "";
                         const containerHtml = container.innerHTML.toLowerCase();
                         const containerText = container.innerText.toLowerCase();
                         
-                        // Look for any success badge or icon in the day cell that might belong to this event
                         const indicatesDone = containerHtml.includes('btn-success') || 
                                              containerHtml.includes('badge-success') || 
                                              containerHtml.includes('completionicon') ||
                                              containerHtml.includes('fa-check') ||
-                                             dayHtml.includes('btn-success') ||
                                              (containerText.includes('done') && !containerText.includes('mark as done')) ||
                                              containerText.includes('selesai') ||
-                                             containerText.includes('terselesaikan') ||
                                              window.getComputedStyle(ev).opacity < 0.8;
 
                         // ROBUST COURSE NAME EXTRACTION
                         let courseName = "";
-                        // If rawTitle is "Course Name: Task Name", parts[0] is Course Name
-                        if (rawTitle.includes(':')) {
-                            const parts = rawTitle.split(':');
-                            if (parts.length > 1) {
-                                courseName = parts[0].trim();
-                                // Double check if courseName is actually the task (common Moodle bug)
-                                if (courseName.toLowerCase() === title.toLowerCase()) courseName = "";
-                            }
+                        const cid = ev.closest('[data-courseid]')?.getAttribute('data-courseid');
+                        if (cid && cidMap[cid]) courseName = cidMap[cid];
+                        
+                        // Fallback to title parsing
+                        if (!courseName && rawTitle.includes(':')) {
+                            const p = rawTitle.split(':');
+                            courseName = p[0].trim();
+                            if (courseName.toLowerCase() === title.toLowerCase()) courseName = "";
                         }
                         
-                        // If still no course name, check for common patterns in rawTitle like " - "
                         if (!courseName && rawTitle.includes(' - ')) {
                             courseName = rawTitle.split(' - ')[0].trim();
                         }
@@ -143,13 +157,30 @@ module.exports = async function handler(req, res) {
                             id: ev.getAttribute('data-event-id'),
                             title, url,
                             course: courseName,
-                            deadlineTimestamp: timestamp,
+                            deadlineTimestamp: dayCell ? parseInt(dayCell.getAttribute('data-day-timestamp')) * 1000 : null,
                             isSubmitted: indicatesDone,
                             type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : (url.includes('forum') ? 'forum' : 'activity')),
                             scrapedAt: new Date().toISOString()
                         };
                     }).filter(i => i);
-                });
+                }, courseIdMap);
+
+                // Deep Scan Fallback for items with missing course names (Limit to 5 to avoid timeout)
+                const missing = items.filter(i => !i.course).slice(0, 5);
+                for (const item of missing) {
+                    try {
+                        await page.goto(item.url, { waitUntil: 'domcontentloaded', timeout: 5000 });
+                        const breadcrumb = await page.evaluate(() => {
+                            const b = document.querySelector('.breadcrumb-item:nth-last-child(3) a') || 
+                                      document.querySelector('.breadcrumb-item:nth-child(3) a') ||
+                                      document.querySelector('a[href*="course/view.php?id="]');
+                            return b ? b.innerText.trim() : "";
+                        });
+                        if (breadcrumb && breadcrumb.length > 5) item.course = breadcrumb;
+                    } catch(e) {}
+                }
+
+                return items;
             } catch (e) { return []; }
         };
 
