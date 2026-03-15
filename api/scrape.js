@@ -1,5 +1,7 @@
 const { chromium } = require('playwright-core');
 const chromiumPack = require('@sparticuz/chromium');
+const path = require('path');
+const fs = require('fs');
 
 module.exports = async function handler(req, res) {
     const startTime = Date.now();
@@ -133,6 +135,14 @@ module.exports = async function handler(req, res) {
             ...r,
             isSubmitted: historyMap.has(r.url) || false
         }));
+
+        // PERSISTENCE: Save to deadlines.json for real-time local sync
+        try {
+            const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
+            fs.writeFileSync(dataPath, JSON.stringify(results, null, 2));
+        } catch (e) {
+            console.error('Failed to save persistence file:', e.message);
+        }
 
         await browser.close();
         return res.status(200).json(results);

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kulino Flow - Task Intelligence HUD</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -182,6 +184,7 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
     </style>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body class="dark scanline">
     <div class="dot-grid"></div>
@@ -191,8 +194,8 @@
         <aside class="w-full md:w-64 lg:w-72 flex flex-col border-r border-white/5 glass shrink-0">
             <div class="p-8">
                 <div class="flex items-center gap-4 mb-2">
-                    <div class="h-10 w-10 bg-primary-fg text-primary flex items-center justify-center clip-corners-sm shadow-xl">
-                        <i data-lucide="command" class="h-6 w-6"></i>
+                    <div class="h-10 w-10 flex items-center justify-center clip-corners-sm shadow-xl overflow-hidden">
+                        <img src="/favicon.png" alt="Logo" class="h-full w-full object-cover">
                     </div>
                     <div class="flex flex-col">
                         <span class="text-xl font-black italic tracking-tighter">TASK<span class="text-gradient">FLOW</span></span>
@@ -222,9 +225,11 @@
                         <span class="tech-text text-[9px] opacity-40">SYSTEM_STATUS</span>
                         <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
                     </div>
-                    <button onclick="loadData()" class="w-full py-2.5 bg-primary text-primary-fg tech-text text-[10px] font-black hover:brightness-125 transition-all clip-corners-sm">
-                        SYNC_DATABASE
+                    <button id="sync-btn" onclick="loadData(true)" class="w-full py-2.5 bg-primary text-primary-fg tech-text text-[10px] font-black hover:brightness-125 transition-all clip-corners-sm flex items-center justify-center gap-2">
+                        <i data-lucide="refresh-cw" class="h-3 w-3" id="sync-icon"></i>
+                        <span id="sync-text">SYNC_DATABASE</span>
                     </button>
+                    <div id="sync-timer" class="mt-4 text-[8px] tech-text opacity-30 text-center">NEXT_AUTO_SYNC: 05:00</div>
                 </div>
             </div>
         </aside>
@@ -288,29 +293,67 @@
     <script>
         let allData = [];
         let filteredData = [];
+        let syncCountdown = 300; // 5 minutes in seconds
 
         async function init() {
             lucide.createIcons();
             await loadData();
+            startAutoSync();
         }
 
-        async function loadData() {
+        function startAutoSync() {
+            setInterval(() => {
+                syncCountdown--;
+                if (syncCountdown <= 0) {
+                    loadData(true);
+                    syncCountdown = 300;
+                }
+                updateSyncTimer();
+            }, 1000);
+        }
+
+        function updateSyncTimer() {
+            const minutes = Math.floor(syncCountdown / 60);
+            const seconds = syncCountdown % 60;
+            const timerEl = document.getElementById('sync-timer');
+            if (timerEl) {
+                timerEl.innerText = `NEXT_AUTO_SYNC: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }
+
+        async function loadData(force = false) {
             try {
                 const container = document.getElementById('grid-container');
-                container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-32 tech-text opacity-50">
-                        <div class="animate-spin h-12 w-12 border-2 border-t-accent border-white/5 rounded-full mb-6"></div>
-                        <span class="animate-pulse tracking-[0.4em]">SCRAPING_SESSION_ACTIVE...</span>
-                    </div>
-                `;
+                const syncBtn = document.getElementById('sync-btn');
+                const syncIcon = document.getElementById('sync-icon');
+                const syncText = document.getElementById('sync-text');
 
-                let res = await fetch('/deadlines.json?t=' + Date.now()).catch(() => null);
+                if (force) {
+                    if (syncIcon) syncIcon.classList.add('animate-spin');
+                    if (syncText) syncText.innerText = 'SYNCING...';
+                }
+
+                if (!allData.length) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-32 tech-text opacity-50">
+                            <div class="animate-spin h-12 w-12 border-2 border-t-accent border-white/5 rounded-full mb-6"></div>
+                            <span class="animate-pulse tracking-[0.4em]">INITIATING_SCRAPE_SESSION...</span>
+                        </div>
+                    `;
+                }
+
                 let data = [];
-                if (res && res.ok) data = await res.json().catch(() => []);
+                
+                // If not forced, try cache first
+                if (!force) {
+                    let res = await fetch('/deadlines.json?t=' + Date.now()).catch(() => null);
+                    if (res && res.ok) data = await res.json().catch(() => []);
+                }
 
-                if (data.length === 0) {
-                    res = await fetch('/api/scrape?t=' + Date.now());
-                    if (!res.ok) throw new Error('CONNECTION_LOST');
+                // If cache empty or forced, fetch from scraper
+                if (data.length === 0 || force) {
+                    const res = await fetch('/api/scrape?t=' + Date.now());
+                    if (!res.ok) throw new Error('SCRAPE_FAILED');
                     data = await res.json();
                 }
 
@@ -320,19 +363,34 @@
                 filteredData = [...allData];
                 updateStats();
                 renderGrid();
+
+                if (force) {
+                    syncCountdown = 300;
+                    if (syncIcon) syncIcon.classList.remove('animate-spin');
+                    if (syncText) syncText.innerText = 'SYNC_DATABASE';
+                }
                 
             } catch (e) {
-                document.getElementById('grid-container').innerHTML = `
-                    <div class="text-center py-32 glass clip-corners hud-border border-rose-500/30">
-                        <i data-lucide="terminal" class="h-16 w-16 text-rose-500 mx-auto mb-6"></i>
-                        <h2 class="tech-text text-xl font-black italic mb-2 tracking-widest">CRITICAL_EXCEPTION</h2>
-                        <p class="text-xs font-mono text-rose-400 mb-8 opacity-70">${e.message}</p>
-                        <button onclick="loadData()" class="px-10 py-3 bg-rose-500 text-white tech-text text-xs font-black clip-corners-sm hover:brightness-125 transition-all">
-                            RETRY_CONNECTION
-                        </button>
-                    </div>
-                `;
+                console.error(e);
+                const container = document.getElementById('grid-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-32 glass clip-corners hud-border border-rose-500/30">
+                            <i data-lucide="terminal" class="h-16 w-16 text-rose-500 mx-auto mb-6"></i>
+                            <h2 class="tech-text text-xl font-black italic mb-2 tracking-widest">CRITICAL_EXCEPTION</h2>
+                            <p class="text-xs font-mono text-rose-400 mb-8 opacity-70">${e.message}</p>
+                            <button onclick="loadData(true)" class="px-10 py-3 bg-rose-500 text-white tech-text text-xs font-black clip-corners-sm hover:brightness-125 transition-all">
+                                RETRY_CONNECTION
+                            </button>
+                        </div>
+                    `;
+                }
                 lucide.createIcons();
+                
+                const syncIcon = document.getElementById('sync-icon');
+                const syncText = document.getElementById('sync-text');
+                if (syncIcon) syncIcon.classList.remove('animate-spin');
+                if (syncText) syncText.innerText = 'SYNC_DATABASE';
             }
         }
 
@@ -343,15 +401,23 @@
             const urgentCount = allData.filter(i => !i.isSubmitted && i.deadlineTimestamp && (i.deadlineTimestamp - now) <= h3 && (i.deadlineTimestamp - now) > 0).length;
             const doneCount = allData.filter(i => i.isSubmitted).length;
 
-            document.getElementById('stat-total').innerText = allData.length;
-            document.getElementById('stat-courses').innerText = courseSet.size;
-            document.getElementById('stat-urgent').innerText = urgentCount;
-            document.getElementById('stat-done').innerText = doneCount;
-            document.getElementById('last-update').innerText = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+            const statTotal = document.getElementById('stat-total');
+            const statCourses = document.getElementById('stat-courses');
+            const statUrgent = document.getElementById('stat-urgent');
+            const statDone = document.getElementById('stat-done');
+            const lastUpdate = document.getElementById('last-update');
+
+            if (statTotal) statTotal.innerText = allData.length;
+            if (statCourses) statCourses.innerText = courseSet.size;
+            if (statUrgent) statUrgent.innerText = urgentCount;
+            if (statDone) statDone.innerText = doneCount;
+            if (lastUpdate) lastUpdate.innerText = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
         }
 
         function renderGrid() {
             const container = document.getElementById('grid-container');
+            if (!container) return;
+
             if (filteredData.length === 0) {
                 container.innerHTML = `
                     <div class="flex flex-col items-center justify-center py-32 opacity-20 tech-text">
