@@ -136,12 +136,14 @@ module.exports = async function handler(req, res) {
             isSubmitted: historyMap.has(r.url) || false
         }));
 
-        // PERSISTENCE: Save to deadlines.json for real-time local sync
-        try {
-            const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
-            fs.writeFileSync(dataPath, JSON.stringify(results, null, 2));
-        } catch (e) {
-            console.error('Failed to save persistence file:', e.message);
+        // PERSISTENCE: Save to deadlines.json for real-time local sync (Skip on Vercel/Read-only)
+        if (!process.env.VERCEL) {
+            try {
+                const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
+                fs.writeFileSync(dataPath, JSON.stringify(results, null, 2));
+            } catch (e) {
+                console.error('Failed to save persistence file:', e.message);
+            }
         }
 
         await browser.close();

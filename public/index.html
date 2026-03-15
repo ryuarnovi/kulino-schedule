@@ -324,69 +324,72 @@
         async function loadData(force = false) {
             try {
                 const container = document.getElementById('grid-container');
-                const syncBtn = document.getElementById('sync-btn');
                 const syncIcon = document.getElementById('sync-icon');
                 const syncText = document.getElementById('sync-text');
 
-                if (force) {
-                    if (syncIcon) syncIcon.classList.add('animate-spin');
-                    if (syncText) syncText.innerText = 'SYNCING...';
-                }
-
+                // 1. Initial Quick Load (Cache)
                 if (!allData.length) {
-                    container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center py-32 tech-text opacity-50">
-                            <div class="animate-spin h-12 w-12 border-2 border-t-accent border-white/5 rounded-full mb-6"></div>
-                            <span class="animate-pulse tracking-[0.4em]">INITIATING_SCRAPE_SESSION...</span>
-                        </div>
-                    `;
-                }
-
-                let data = [];
-                
-                // If not forced, try cache first
-                if (!force) {
                     let res = await fetch('/deadlines.json?t=' + Date.now()).catch(() => null);
-                    if (res && res.ok) data = await res.json().catch(() => []);
+                    if (res && res.ok) {
+                        const cached = await res.json().catch(() => []);
+                        if (cached.length) {
+                            allData = cached;
+                            allData.sort((a, b) => (a.deadlineTimestamp || 0) - (b.deadlineTimestamp || 0));
+                            filteredData = [...allData];
+                            updateStats();
+                            renderGrid();
+                        }
+                    }
                 }
 
-                // If cache empty or forced, fetch from scraper
-                if (data.length === 0 || force) {
+                if (force || !allData.length) {
+                    if (syncIcon) syncIcon.classList.add('animate-spin');
+                    if (syncText) syncText.innerText = 'SCRAPING...';
+                    
+                    if (!allData.length) {
+                        container.innerHTML = `
+                            <div class="flex flex-col items-center justify-center py-32 tech-text opacity-50">
+                                <div class="animate-spin h-12 w-12 border-2 border-t-accent border-white/5 rounded-full mb-6"></div>
+                                <span class="animate-pulse tracking-[0.4em]">INITIATING_LIVE_SYNC...</span>
+                            </div>
+                        `;
+                    }
+
+                    // 2. Background/Fresh Scrape
                     const res = await fetch('/api/scrape?t=' + Date.now());
-                    if (!res.ok) throw new Error('SCRAPE_FAILED');
-                    data = await res.json();
-                }
-
-                allData = Array.isArray(data) ? data : [];
-                allData.sort((a, b) => (a.deadlineTimestamp || 0) - (b.deadlineTimestamp || 0));
-                
-                filteredData = [...allData];
-                updateStats();
-                renderGrid();
-
-                if (force) {
+                    if (!res.ok) throw new Error('API_CONNECTION_ERROR');
+                    const freshData = await res.json();
+                    
+                    if (Array.isArray(freshData) && freshData.length > 0) {
+                        allData = freshData;
+                        allData.sort((a, b) => (a.deadlineTimestamp || 0) - (b.deadlineTimestamp || 0));
+                        filteredData = [...allData];
+                    }
+                    
+                    updateStats();
+                    renderGrid();
                     syncCountdown = 300;
-                    if (syncIcon) syncIcon.classList.remove('animate-spin');
-                    if (syncText) syncText.innerText = 'SYNC_DATABASE';
                 }
+
+                if (syncIcon) syncIcon.classList.remove('animate-spin');
+                if (syncText) syncText.innerText = 'SYNC_DATABASE';
                 
             } catch (e) {
-                console.error(e);
+                console.error('LIVE_SYNC_FAILED:', e);
                 const container = document.getElementById('grid-container');
-                if (container) {
+                if (!allData.length && container) {
                     container.innerHTML = `
                         <div class="text-center py-32 glass clip-corners hud-border border-rose-500/30">
                             <i data-lucide="terminal" class="h-16 w-16 text-rose-500 mx-auto mb-6"></i>
-                            <h2 class="tech-text text-xl font-black italic mb-2 tracking-widest">CRITICAL_EXCEPTION</h2>
+                            <h2 class="tech-text text-xl font-black italic mb-2 tracking-widest">SYNC_FAILURE</h2>
                             <p class="text-xs font-mono text-rose-400 mb-8 opacity-70">${e.message}</p>
                             <button onclick="loadData(true)" class="px-10 py-3 bg-rose-500 text-white tech-text text-xs font-black clip-corners-sm hover:brightness-125 transition-all">
-                                RETRY_CONNECTION
+                                FORCE_RETRY
                             </button>
                         </div>
                     `;
                 }
                 lucide.createIcons();
-                
                 const syncIcon = document.getElementById('sync-icon');
                 const syncText = document.getElementById('sync-text');
                 if (syncIcon) syncIcon.classList.remove('animate-spin');
