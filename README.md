@@ -7,7 +7,6 @@ Kulino Flow adalah dashboard modern, cerdas, dan futuristik untuk mahasiswa Univ
 - ⏰ **Deep Deadline Detection**: Deteksi deadline hingga ke dalam detail link tugas secara otomatis.
 - 🚨 **H-3 Urgent Warning**: Notifikasi visual untuk tugas yang akan berakhir dalam 3 hari.
 - 🌓 **Dual Theme System**: Dukungan Mode Gelap (Deep Space) dan Mode Terang (Crystal Mist).
-- 📂 **Quick Submit**: Unggah tugas langsung dari dashboard tanpa harus membuka web Kulino.
 
 ## 📸 Tampilan Dashboard
 ![Dashboard Dark Mode](public/images/image.png)
