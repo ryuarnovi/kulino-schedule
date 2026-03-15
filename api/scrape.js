@@ -49,86 +49,82 @@ module.exports = async function handler(req, res) {
             page.click('#loginbtn'),
         ]);
 
-        // 2. SCRAPE CALENDAR (Try Upcoming first for Course Names, then Month)
-        let results = [];
-        const h3 = 3 * 24 * 60 * 60 * 1000;
-        const now = Date.now();
+        // 2. SCRAPE CALENDAR (Enhanced: Scrape Both Views for Completeness)
+        let resultsMap = new Map();
 
-        // Upcoming View (Faster for Course Names)
+        // Function to merge results
+        const mergeResults = (newItems) => {
+            newItems.forEach(item => {
+                if (item && item.url) {
+                    // If already exists, keep the one with a deadline if available
+                    if (resultsMap.has(item.url)) {
+                        const existing = resultsMap.get(item.url);
+                        if (!existing.deadlineTimestamp && item.deadlineTimestamp) {
+                            resultsMap.set(item.url, { ...existing, ...item });
+                        }
+                    } else {
+                        resultsMap.set(item.url, item);
+                    }
+                }
+            });
+        };
+
+        // A. Upcoming View
         try {
-            await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 5000 });
-            await page.waitForSelector('.eventlist .event', { timeout: 3000 }).catch(() => {});
-            
-            results = await page.evaluate(() => {
+            await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 8000 });
+            const upcoming = await page.evaluate(() => {
                 const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner'];
                 return Array.from(document.querySelectorAll('.eventlist .event')).map(ev => {
                     const titleLink = ev.querySelector('h3.name a') || ev.querySelector('a[href*="/mod/"]');
                     if (!titleLink) return null;
-                    
                     const title = titleLink.textContent.trim().replace(/\s+is\s+due$/i, '').replace(/\s+opens$/i, '').trim();
                     const url = titleLink.href;
-                    
-                    const t = title.toLowerCase();
-                    const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum') || url.includes('choice') || url.includes('feedback') || url.includes('survey') || url.includes('workshop') || url.includes('lti') || url.includes('resource') || url.includes('url');
-                    if (!isTask) return null;
-
-                    // Upcoming view has course link near the bottom
+                    if (!filter.some(f => title.toLowerCase().includes(f)) && !url.includes('assign') && !url.includes('quiz') && !url.includes('forum')) return null;
                     const courseLink = ev.querySelector('a[href*="course/view.php?id="]');
-                    let courseName = courseLink ? courseLink.textContent.trim() : "";
-
                     return {
                         id: ev.getAttribute('data-event-id') || url,
                         title, url,
-                        course: courseName,
-                        type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : (url.includes('forum') ? 'forum' : (url.includes('choice') || url.includes('feedback') || url.includes('survey') || url.includes('workshop') || url.includes('lti') || url.includes('resource') || url.includes('url') || t.includes('kegiatan') || t.includes('activity') ? 'student_activity' : 'activity'))),
+                        course: courseLink ? courseLink.textContent.trim() : "",
+                        type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
                         scrapedAt: new Date().toISOString()
                     };
                 }).filter(i => i);
             });
-        } catch (e) {}
-
-        // Fallback to Month View if Upcoming is empty
-        if (results.length === 0 && (Date.now() - startTime < 8000)) {
-            try {
-                await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=month', { waitUntil: 'domcontentloaded', timeout: 4000 });
-                await page.waitForSelector('.calendartable', { timeout: 2000 }).catch(() => {});
-                
-                const monthResults = await page.evaluate(() => {
-                    const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner'];
-                    const events = Array.from(document.querySelectorAll('a[data-action="view-event"]'));
-                    return events.map(ev => {
-                        const rawTitle = ev.getAttribute('title') || '';
-                        const url = ev.href;
-                        let title = rawTitle.replace(' is due', '').replace(' opens', '').trim();
-                        
-                        const t = title.toLowerCase();
-                        const isTask = filter.some(f => t.includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum') || url.includes('choice') || url.includes('feedback') || url.includes('survey') || url.includes('workshop') || url.includes('lti') || url.includes('resource') || url.includes('url');
-                        if (!isTask) return null;
-
-                        const parentDay = ev.closest('td.day');
-                        const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
-
-                        // Try to parse course name from title attribute if possible
-                        // Format: "Course Name: Event Name is due"
-                        let courseName = "";
-                        if (rawTitle.includes(':')) {
-                            courseName = rawTitle.split(':')[0].trim();
-                        }
-
-                        return {
-                            id: ev.getAttribute('data-event-id'),
-                            title, url,
-                            course: courseName,
-                            deadlineTimestamp: timestamp,
-                        type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : (url.includes('forum') ? 'forum' : (url.includes('choice') || url.includes('feedback') || url.includes('survey') || url.includes('workshop') || url.includes('lti') || url.includes('resource') || url.includes('url') || t.includes('kegiatan') || t.includes('activity') ? 'student_activity' : 'activity'))),
-                        scrapedAt: new Date().toISOString()
-                    };
-                    }).filter(i => i);
-                });
-                results = [...results, ...monthResults];
-            } catch (e) {}
+            mergeResults(upcoming);
+        } catch (e) {
+            console.error('Upcoming scrape failed:', e.message);
         }
 
+        // B. Month View (Usually more comprehensive)
+        try {
+            await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=month', { waitUntil: 'domcontentloaded', timeout: 8000 });
+            const monthItems = await page.evaluate(() => {
+                const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner'];
+                const events = Array.from(document.querySelectorAll('a[data-action="view-event"]'));
+                return events.map(ev => {
+                    const rawTitle = ev.getAttribute('title') || '';
+                    const url = ev.href;
+                    const title = rawTitle.replace(' is due', '').replace(' opens', '').trim();
+                    if (!filter.some(f => title.toLowerCase().includes(f)) && !url.includes('assign') && !url.includes('quiz') && !url.includes('forum')) return null;
+                    const parentDay = ev.closest('td.day');
+                    const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
+                    let courseName = rawTitle.includes(':') ? rawTitle.split(':')[0].trim() : "";
+                    return {
+                        id: ev.getAttribute('data-event-id'),
+                        title, url,
+                        course: courseName,
+                        deadlineTimestamp: timestamp,
+                        type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
+                        scrapedAt: new Date().toISOString()
+                    };
+                }).filter(i => i);
+            });
+            mergeResults(monthItems);
+        } catch (e) {
+            console.error('Month scrape failed:', e.message);
+        }
+
+        let results = Array.from(resultsMap.values());
 
         // Final Sync with History
         results = results.map(r => ({
