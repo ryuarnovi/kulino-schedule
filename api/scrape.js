@@ -61,18 +61,29 @@ module.exports = async function handler(req, res) {
         const mergeResults = (newItems) => {
             newItems.forEach(item => {
                 if (!item || !item.url) return;
-                const existing = resultsMap.get(item.url);
+                const normUrl = normalizeUrl(item.url);
+                item.url = normUrl;
+                const existing = resultsMap.get(normUrl);
                 if (existing) {
-                    // Update existing with new data, but keep isSubmitted if already true
-                    resultsMap.set(item.url, { 
+                    resultsMap.set(normUrl, { 
                         ...existing, 
                         ...item, 
                         isSubmitted: existing.isSubmitted || item.isSubmitted 
                     });
                 } else {
-                    resultsMap.set(item.url, item);
+                    resultsMap.set(normUrl, item);
                 }
             });
+        };
+
+        // URL normalization helper
+        const normalizeUrl = (u) => {
+            if (!u) return "";
+            try {
+                const urlObj = new URL(u);
+                const id = urlObj.searchParams.get('id');
+                return urlObj.origin + urlObj.pathname + (id ? `?id=${id}` : "");
+            } catch (e) { return u.split('?')[0]; }
         };
 
         // Utility to scrape a month view
@@ -85,26 +96,22 @@ module.exports = async function handler(req, res) {
                     return events.map(ev => {
                         const rawTitle = ev.getAttribute('title') || '';
                         const url = ev.href;
-                        const title = rawTitle.replace(' is due', '').replace(' opens', '').trim();
+                        const title = rawTitle.replace(/\s+is\s+due$/i, '').replace(/\s+opens$/i, '').trim();
                         
-                        // Clean URL for unique key
-                        let cleanUrl = url.split('?')[0];
-                        if (url.includes('id=')) {
-                            const idMatch = url.match(/id=(\d+)/);
-                            if (idMatch) cleanUrl += '?id=' + idMatch[1];
-                        }
-
                         const isTask = filter.some(f => title.toLowerCase().includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum');
                         if (!isTask) return null;
 
                         const parentDay = ev.closest('td.day');
                         const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
                         
-                        // MOODLE 4+ COMPLETION DETECTION (Deep Scan in Container)
+                        // MOODLE 4+ COMPLETION DETECTION
                         const container = ev.closest('.calendar-event, .event') || ev.parentElement;
-                        const hasGreenIndicator = !!container.querySelector('.btn-success, .badge-success, .btn-outline-success.active, .completionicon[title*="Done"], .icon[title*="Done"]');
+                        const hasGreenBtn = !!container.querySelector('.btn-success, .badge-success, .btn-outline-success.active, .completionicon[title*="Done"], .icon[title*="Done"]');
                         const isDimmed = window.getComputedStyle(ev).opacity < 0.8;
-                        const isSubmitted = hasGreenIndicator || isDimmed || container.innerText.toLowerCase().includes('done') || container.innerText.toLowerCase().includes('selesai');
+                        const text = container.innerText.toLowerCase();
+                        
+                        const isDone = hasGreenBtn || isDimmed || 
+                                     ((text.includes('done') || text.includes('selesai') || text.includes('terselesaikan')) && !text.includes('mark as done'));
 
                         let courseName = "";
                         if (rawTitle.includes(':')) {
@@ -112,14 +119,14 @@ module.exports = async function handler(req, res) {
                         } else if (rawTitle.includes(' - ')) {
                             courseName = rawTitle.split(' - ')[0].trim();
                         }
+                        if (courseName.toLowerCase() === title.toLowerCase()) courseName = "";
 
                         return {
                             id: ev.getAttribute('data-event-id'),
-                            title, 
-                            url: cleanUrl,
+                            title, url,
                             course: courseName,
                             deadlineTimestamp: timestamp,
-                            isSubmitted: isSubmitted,
+                            isSubmitted: isDone,
                             type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : (url.includes('forum') ? 'forum' : 'activity')),
                             scrapedAt: new Date().toISOString()
                         };
@@ -139,37 +146,33 @@ module.exports = async function handler(req, res) {
                     const url = titleLink.href;
                     
                     const courseLink = ev.querySelector('a[href*="course/view.php?id="]');
-                    const rawContent = ev.innerText.toLowerCase();
-                    const rawHtml = ev.innerHTML.toLowerCase();
+                    const html = ev.innerHTML.toLowerCase();
+                    const text = ev.innerText.toLowerCase();
                     
-                    // Comprehensive Check for Moodle 4 "Done" status
-                    const isSubmitted = rawContent.includes('submitted') || 
-                                      rawContent.includes('terselesaikan') || 
-                                      rawContent.includes('sudah dikumpulkan') ||
-                                      rawContent.includes('done') ||
-                                      rawContent.includes('complete') ||
-                                      rawContent.includes('mark as done') ||
-                                      rawHtml.includes('btn-success') ||
-                                      rawHtml.includes('badge-success') ||
-                                      rawHtml.includes('btn-outline-success active') ||
-                                      !!ev.querySelector('.btn-success, .badge-success, .icon[title*="Done"]');
+                    const isDone = html.includes('btn-success') || 
+                                  html.includes('badge-success') || 
+                                  html.includes('btn-outline-success active') ||
+                                  ((text.includes('submitted') || text.includes('terselesaikan') || text.includes('done') || text.includes('complete')) && !text.includes('mark as done'));
 
                     return {
                         id: ev.getAttribute('data-event-id') || url,
                         title, url,
                         course: courseLink ? courseLink.textContent.trim() : "",
-                        isSubmitted: isSubmitted,
+                        isSubmitted: isDone,
                         type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
                         scrapedAt: new Date().toISOString()
                     };
                 }).filter(i => i);
             });
+            
+            // Normalize URLs for consistent mapping
+            upcoming.forEach(item => item.url = normalizeUrl(item.url));
             mergeResults(upcoming);
         } catch (e) {}
 
         // B. Get Current, Previous and Next Month for comprehensive history/future
         const now = new Date();
-        const currentMonthUrl = `https://kulino.dinus.ac.id/calendar/view.php?view=month&course=1`;
+        const currentMonthUrl = `https://kulino.dinus.ac.id/calendar/view.php?view=month`;
         
         // Scrape Current Month
         const currentItems = await scrapeMonth(currentMonthUrl);
@@ -204,8 +207,10 @@ module.exports = async function handler(req, res) {
             if (fs.existsSync(dataPath)) {
                 const history = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
                 history.forEach(oldItem => {
-                    const existing = resultsMap.get(oldItem.url);
+                    const normUrl = normalizeUrl(oldItem.url);
+                    const existing = resultsMap.get(normUrl);
                     if (!existing) {
+                        oldItem.url = normUrl;
                         finalResults.push(oldItem);
                     } else {
                         // Priority: If either history or current scrape says it's done, it's DONE
