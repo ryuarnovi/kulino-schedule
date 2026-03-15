@@ -48,5 +48,22 @@ Kulino Flow adalah dashboard modern, cerdas, dan futuristik untuk mahasiswa Univ
 ## 🔐 Keamanan
 Aplikasi ini tidak menyimpan kredensial Anda di server luar. Akun Anda hanya digunakan secara lokal (atau di server deployment Anda sendiri seperti Vercel) untuk berinteraksi dengan website Kulino secara otomatis.
 
+## 🛡️ Guard Protocol (Branch Protection)
+
+Untuk memastikan tidak ada yang melakukan `push` sembarangan tanpa request/verifikasi, ikuti langkah-langkah berikut di **GitHub Settings**:
+
+1.  Buka repository di GitHub.
+2.  Pergi ke **Settings** > **Branches**.
+3.  Klik **Add branch protection rule**.
+4.  **Branch name pattern**: Isi dengan `main`.
+5.  Centang **Require a pull request before merging**: 
+    - Ini akan memaksa semua perubahan harus lewat "Request" (Pull Request).
+6.  Centang **Require status checks to pass before merging**:
+    - Cari dan pilih `Logic Protection Gate` (ini adalah pengecekan otomatis yang saya buat).
+7.  Centang **Do not allow bypassing the above settings**: Agar peraturan ini berlaku untuk semua orang (termasuk admin).
+8.  Klik **Create**.
+
+Dengan ini, repositori Anda terlindungi dari perubahan yang tidak disengaja.
+
 ---
 Dibuat dengan ❤️ untuk mahasiswa Udinus.

@@ -1,0 +1,28 @@
+name: Logic Protection Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Dependencies
+        run: npm install
+        
+      - name: Check Syntax
+        run: node --check server.js api/scrape.js
+        
+      - name: Verify HUD Structure
+        run: |
+          if [ ! -f public/index.html ]; then echo "Frontend missing"; exit 1; fi
+          if [ ! -f public/deadlines.json ]; then echo "Database missing"; exit 1; fi
