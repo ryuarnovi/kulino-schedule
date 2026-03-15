@@ -93,17 +93,28 @@ module.exports = async function handler(req, res) {
                         const parentDay = ev.closest('td.day');
                         const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
                         
-                        // ENHANCED COMPLETION DETECTION
-                        // Look for: checkmark icons, "Done" badges, or dimmed opacity
-                        const hasCheckmark = !!ev.querySelector('.icon[title*="Done"], .icon[title*="Selesai"], .fa-check, .fa-check-circle, .completionicon[title*="Done"]');
-                        const hasBadge = !!ev.querySelector('.badge-success, .badge-info, .badge.completion-badge');
-                        const isDimmed = window.getComputedStyle(ev).opacity < 0.7; // Lower threshold to be sure
+                        // MOODLE 4+ COMPLETION DETECTION
+                        // Look for green buttons, badges, or specific classes in the event or its siblings/parent
+                        const hasGreenButton = !!ev.querySelector('.btn-success, .btn-outline-success.active, .badge-success');
+                        const hasCheckIcon = !!ev.querySelector('.icon[title*="Done"], .icon[title*="Selesai"], .fa-check, .fa-check-circle, .completionicon[title*="Done"]');
                         
-                        // Check if parent element indicates completion
-                        const parentText = ev.parentElement ? ev.parentElement.innerText.toLowerCase() : "";
-                        const textIndicatesDone = parentText.includes('selesai') || parentText.includes('done') || parentText.includes('terselesaikan');
+                        // Sometimes the status is in a sibling or the container
+                        const container = ev.closest('.event, .calendar-event, td.day');
+                        const containerHtml = container ? container.innerHTML.toLowerCase() : "";
+                        const containerText = container ? container.innerText.toLowerCase() : "";
+                        
+                        const indicatesDone = hasGreenButton || 
+                                             hasCheckIcon || 
+                                             containerHtml.includes('btn-success') || 
+                                             containerHtml.includes('badge-success') ||
+                                             containerText.includes('selesai') || 
+                                             containerText.includes('done') || 
+                                             containerText.includes('terselesaikan');
+                                             containerText.includes('submitted');
+                                             containerText.includes('complete')
 
-                        const isSubmitted = hasCheckmark || hasBadge || isDimmed || textIndicatesDone;
+                        const isDimmed = window.getComputedStyle(ev).opacity < 0.8;
+                        const isSubmitted = indicatesDone || isDimmed;
 
                         let courseName = rawTitle.includes(':') ? rawTitle.split(':')[0].trim() : "";
 
@@ -121,7 +132,7 @@ module.exports = async function handler(req, res) {
             } catch (e) { return []; }
         };
 
-        // A. Upcoming View (Check for explicit completion text)
+        // A. Upcoming View (Check for explicit Moodle 4 status indicators)
         try {
             await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 8000 });
             const upcoming = await page.evaluate(() => {
@@ -133,14 +144,19 @@ module.exports = async function handler(req, res) {
                     
                     const courseLink = ev.querySelector('a[href*="course/view.php?id="]');
                     const rawContent = ev.innerText.toLowerCase();
+                    const rawHtml = ev.innerHTML.toLowerCase();
                     
-                    // Detect "Done" from upcoming list specifically
+                    // Comprehensive Check for Moodle 4 "Done" status
                     const isSubmitted = rawContent.includes('submitted') || 
                                       rawContent.includes('terselesaikan') || 
                                       rawContent.includes('sudah dikumpulkan') ||
                                       rawContent.includes('done') ||
-                                      !!ev.querySelector('.badge-success') ||
-                                      !!ev.querySelector('.icon[title*="Done"]');
+                                      rawContent.includes('complete') ||
+                                      rawContent.includes('mark as done') ||
+                                      rawHtml.includes('btn-success') ||
+                                      rawHtml.includes('badge-success') ||
+                                      rawHtml.includes('btn-outline-success active') ||
+                                      !!ev.querySelector('.btn-success, .badge-success, .icon[title*="Done"]');
 
                     return {
                         id: ev.getAttribute('data-event-id') || url,
