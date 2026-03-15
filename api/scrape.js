@@ -69,7 +69,14 @@ module.exports = async function handler(req, res) {
                 const existing = resultsMap.get(normUrl);
                 if (existing) {
                     const merged = { ...existing, ...item };
-                    if (!item.course && existing.course) merged.course = existing.course;
+                    // PRESERVE Real Course Name: Only overwrite if item.course is non-empty AND not General
+                    const isNewCourseValid = item.course && item.course !== "" && item.course !== "GENERAL_ARCHIVE";
+                    const isExistingCourseValid = existing.course && existing.course !== "" && existing.course !== "GENERAL_ARCHIVE";
+                    
+                    if (!isNewCourseValid && isExistingCourseValid) {
+                        merged.course = existing.course;
+                    }
+                    
                     merged.isSubmitted = existing.isSubmitted || item.isSubmitted;
                     resultsMap.set(normUrl, merged);
                 } else {
@@ -78,18 +85,21 @@ module.exports = async function handler(req, res) {
             });
         };
 
-        // 3. Get Course ID Map (Gathers names for data-courseid matches)
+        // 3. Get Course ID Map (Aggressive Search across multiple entry points)
         let courseIdMap = {};
         const collectCourses = async () => {
             const found = await page.evaluate(() => {
                 const map = {};
+                // Scan all links that point to a course
                 document.querySelectorAll('a[href*="course/view.php?id="]').forEach(a => {
                     const id = new URL(a.href).searchParams.get('id');
                     let name = a.innerText.trim();
-                    if (id && name && name.length > 5 && name !== 'Course') {
-                        // Clean up name and prioritize [CODE] SUBJECT
-                        if (!map[id] || name.includes('[')) {
-                            map[id] = name.split('\n')[0].replace(/^Course:\s+/i, '').trim();
+                    if (id && name && name.length > 3 && name.toLowerCase() !== 'course') {
+                        // Clean name: remove "Course", "Mata Kuliah", and extra whitespace/newlines
+                        name = name.split('\n')[0].replace(/^(Course|Mata Kuliah|Matkul):\s+/i, '').trim();
+                        // Priority to names with brackets [202xx]
+                        if (!map[id] || (name.includes('[') && !map[id].includes('['))) {
+                            map[id] = name;
                         }
                     }
                 });
@@ -101,7 +111,11 @@ module.exports = async function handler(req, res) {
         try {
             await page.goto('https://kulino.dinus.ac.id/my/', { waitUntil: 'domcontentloaded', timeout: 10000 });
             await collectCourses();
-            await page.goto('https://kulino.dinus.ac.id/my/courses.php', { waitUntil: 'domcontentloaded', timeout: 5000 }).catch(() => {});
+            // Try Grades page which is a list of ALL enrolled courses
+            await page.goto('https://kulino.dinus.ac.id/grade/report/overview/index.php', { waitUntil: 'domcontentloaded', timeout: 5000 }).catch(() => {});
+            await collectCourses();
+            // Try the 'all' view
+            await page.goto('https://kulino.dinus.ac.id/my/courses.php?display=all', { waitUntil: 'domcontentloaded', timeout: 5000 }).catch(() => {});
             await collectCourses();
         } catch(e) {}
 
@@ -127,22 +141,19 @@ module.exports = async function handler(req, res) {
                                              window.getComputedStyle(ev).opacity < 0.8;
 
                         let courseName = "";
+                        // Try data-courseid from calendar
                         const cid = ev.closest('[data-courseid]')?.getAttribute('data-courseid') || ev.closest('.event')?.getAttribute('data-course-id');
                         if (cid && cidMap[cid]) courseName = cidMap[cid];
                         
+                        // Try title parsing "[COURSE] Task" or "Course: Task"
                         if (!courseName && rawTitle.includes(':')) {
                             const p = rawTitle.split(':');
                             if (p[0].includes('[') || p[0].includes('A11')) courseName = p[0].trim();
                         }
                         
-                        if (!courseName && rawTitle.includes(' - ')) {
-                            const p = rawTitle.split(' - ');
-                            courseName = p[0].toLowerCase().includes(title.toLowerCase()) ? p[1].trim() : p[0].trim();
-                        }
-
                         return {
                             id: ev.getAttribute('data-event-id'),
-                            title, url, course: courseName,
+                            title, url, course: courseName, cid,
                             deadlineTimestamp: dayCell ? parseInt(dayCell.getAttribute('data-day-timestamp')) * 1000 : null,
                             isSubmitted: indicatesDone,
                             type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
@@ -151,19 +162,34 @@ module.exports = async function handler(req, res) {
                     }).filter(i => i);
                 }, courseIdMap);
 
-                // Deep Search Fallback
-                for (const item of items) {
-                    if (!item.course || item.course === "") {
-                        try {
-                            await page.goto(item.url, { waitUntil: 'domcontentloaded', timeout: 5000 });
-                            item.course = await page.evaluate(() => {
-                                const b = document.querySelector('.breadcrumb-item:nth-last-child(3) a') || 
-                                          document.querySelector('.breadcrumb-item:nth-child(3) a') ||
-                                          document.querySelector('a[href*="course/view.php?id="]');
-                                return b ? b.innerText.trim() : "";
-                            });
-                        } catch(e) {}
-                    }
+                // DEEP SEARCH: If still missing course, visit the activity page to find its course
+                // We focus on items with MISSING course names
+                const missing = items.filter(i => !i.course || i.course === "" || i.course === "GENERAL_ARCHIVE");
+                for (const item of missing) {
+                    try {
+                        // Go to activity detail page
+                        await page.goto(item.url, { waitUntil: 'domcontentloaded', timeout: 5000 });
+                        
+                        const detailInfo = await page.evaluate(() => {
+                            // 1. Breadcrumb (Home > Course Name > ...)
+                            const bread = document.querySelectorAll('.breadcrumb-item a');
+                            if (bread.length >= 3) return bread[2].innerText.trim();
+                            
+                            // 2. Specific Course Link in page (often in sidebars)
+                            const cLink = document.querySelector('a[href*="course/view.php?id="]');
+                            if (cLink && cLink.innerText.length > 5) return cLink.innerText.trim();
+                            
+                            // 3. Page Title (often contains Course Name)
+                            const h1 = document.querySelector('h1');
+                            if (h1 && h1.innerText.includes('[')) return h1.innerText.trim();
+                            
+                            return "";
+                        });
+                        
+                        if (detailInfo && detailInfo.length > 3) {
+                            item.course = detailInfo.split('\n')[0].replace(/^(Course|Mata Kuliah):\s+/i, '').trim();
+                        }
+                    } catch(e) {}
                 }
                 return items;
             } catch (e) { return []; }
@@ -172,13 +198,13 @@ module.exports = async function handler(req, res) {
         // A. Upcoming View
         try {
             await page.goto('https://kulino.dinus.ac.id/calendar/view.php?view=upcoming', { waitUntil: 'domcontentloaded', timeout: 8000 });
-            const upcoming = await page.evaluate(() => {
+            const upcomingRaw = await page.evaluate(() => {
                 return Array.from(document.querySelectorAll('.eventlist .event')).map(ev => {
                     const titleLink = ev.querySelector('h3.name a') || ev.querySelector('a[href*="/mod/"]');
                     if (!titleLink) return null;
-                    const title = titleLink.textContent.trim().replace(/\s+is\s+due$/i, '').replace(/\s+opens$/i, '').trim();
                     const url = titleLink.href;
                     const courseLink = ev.querySelector('a[href*="course/view.php?id="]');
+                    const cid = courseLink ? new URL(courseLink.href).searchParams.get('id') : null;
                     const text = ev.innerText.toLowerCase();
                     const isDone = ev.innerHTML.toLowerCase().includes('btn-success') || 
                                   ev.innerHTML.toLowerCase().includes('badge-success') || 
@@ -186,14 +212,22 @@ module.exports = async function handler(req, res) {
 
                     return {
                         id: ev.getAttribute('data-event-id') || url,
-                        title, url,
-                        course: courseLink ? courseLink.textContent.trim() : "",
+                        title: titleLink.textContent.trim().replace(/\s+is\s+due$/i, '').trim(),
+                        url, cid,
                         isSubmitted: isDone,
                         type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : 'activity'),
                         scrapedAt: new Date().toISOString()
                     };
                 }).filter(i => i);
             });
+            
+            // Map cid to names using our courseIdMap
+            const upcoming = upcomingRaw.map(item => {
+                let name = "";
+                if (item.cid && courseIdMap[item.cid]) name = courseIdMap[item.cid];
+                return { ...item, course: name };
+            });
+
             mergeResults(upcoming);
         } catch (e) {}
 
@@ -220,19 +254,35 @@ module.exports = async function handler(req, res) {
 
         // Final Sync and Persistence
         let finalResults = Array.from(resultsMap.values());
+        
+        // Final Fixer: For any item still in General Archive, try to find its course from history or deep scan
+        finalResults.forEach(item => {
+            if (!item.course || item.course === "" || item.course === "GENERAL_ARCHIVE") {
+                // Check if we can find it in courseIdMap (if we have its CID)
+                if (item.cid && courseIdMap[item.cid]) {
+                    item.course = courseIdMap[item.cid];
+                }
+            }
+        });
+
         try {
             const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
             if (fs.existsSync(dataPath)) {
                 const history = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
                 history.forEach(oldItem => {
                     const normUrl = normalizeUrl(oldItem.url);
-                    const existing = resultsMap.get(normUrl);
-                    if (!existing) {
+                    const existingFound = finalResults.find(f => f.url === normUrl);
+                    
+                    if (!existingFound) {
                         oldItem.url = normUrl;
                         finalResults.push(oldItem);
                     } else {
-                        if (oldItem.isSubmitted) existing.isSubmitted = true;
-                        if (!existing.course && oldItem.course) existing.course = oldItem.course;
+                        // Priority: DONE stays DONE
+                        if (oldItem.isSubmitted) existingFound.isSubmitted = true;
+                        // Priority: Real course name stays, don't overwrite with General
+                        if ((!existingFound.course || existingFound.course === "GENERAL_ARCHIVE") && (oldItem.course && oldItem.course !== "GENERAL_ARCHIVE")) {
+                            existingFound.course = oldItem.course;
+                        }
                     }
                 });
             }

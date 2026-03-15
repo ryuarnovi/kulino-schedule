@@ -395,8 +395,14 @@
                             item.url = nUrl;
                             const existing = oldDataMap.get(nUrl);
                             if (existing) {
-                                // Keep old course name if fresh one is missing
-                                if ((!item.course || item.course === "") && existing.course) item.course = existing.course;
+                                // Keep old course name if fresh one is missing or generic
+                                const isFreshValid = item.course && item.course !== "" && item.course !== "GENERAL_ARCHIVE";
+                                const isExistingValid = existing.course && existing.course !== "" && existing.course !== "GENERAL_ARCHIVE";
+                                
+                                if (!isFreshValid && isExistingValid) {
+                                    item.course = existing.course;
+                                }
+                                
                                 // Keep completion status if either one has it
                                 item.isSubmitted = item.isSubmitted || existing.isSubmitted;
                             }
