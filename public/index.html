@@ -295,6 +295,8 @@
         let filteredData = [];
         let syncCountdown = 300; // 5 minutes in seconds
 
+        let isLoadingData = false;
+
         async function init() {
             lucide.createIcons();
             await loadData();
@@ -322,10 +324,14 @@
         }
 
         async function loadData(force = false) {
+            if (isLoadingData && force) return;
+            isLoadingData = true;
+
+            const syncIcon = document.getElementById('sync-icon');
+            const syncText = document.getElementById('sync-text');
+
             try {
                 const container = document.getElementById('grid-container');
-                const syncIcon = document.getElementById('sync-icon');
-                const syncText = document.getElementById('sync-text');
 
                 // 1. Initial Quick Load (Cache)
                 if (!allData.length) {
@@ -370,14 +376,10 @@
                     renderGrid();
                     syncCountdown = 300;
                 }
-
-                if (syncIcon) syncIcon.classList.remove('animate-spin');
-                if (syncText) syncText.innerText = 'SYNC_DATABASE';
-                
             } catch (e) {
                 console.error('LIVE_SYNC_FAILED:', e);
                 const container = document.getElementById('grid-container');
-                if (!allData.length && container) {
+                if ((!allData || !allData.length) && container) {
                     container.innerHTML = `
                         <div class="text-center py-32 glass clip-corners hud-border border-rose-500/30">
                             <i data-lucide="terminal" class="h-16 w-16 text-rose-500 mx-auto mb-6"></i>
@@ -389,11 +391,11 @@
                         </div>
                     `;
                 }
-                lucide.createIcons();
-                const syncIcon = document.getElementById('sync-icon');
-                const syncText = document.getElementById('sync-text');
+            } finally {
+                isLoadingData = false;
                 if (syncIcon) syncIcon.classList.remove('animate-spin');
                 if (syncText) syncText.innerText = 'SYNC_DATABASE';
+                lucide.createIcons();
             }
         }
 
