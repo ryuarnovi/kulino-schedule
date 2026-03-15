@@ -105,28 +105,46 @@ module.exports = async function handler(req, res) {
                         const timestamp = parentDay ? parseInt(parentDay.getAttribute('data-day-timestamp')) * 1000 : null;
                         
                         // MOODLE 4+ COMPLETION DETECTION
-                        const container = ev.closest('.calendar-event, .event') || ev.parentElement;
-                        const hasGreenBtn = !!container.querySelector('.btn-success, .badge-success, .btn-outline-success.active, .completionicon[title*="Done"], .icon[title*="Done"]');
-                        const isDimmed = window.getComputedStyle(ev).opacity < 0.8;
-                        const text = container.innerText.toLowerCase();
+                        const dayCell = ev.closest('td.day');
+                        const container = ev.closest('.calendar-event') || ev.closest('.event') || ev.parentElement;
+                        const dayHtml = dayCell ? dayCell.innerHTML.toLowerCase() : "";
+                        const containerHtml = container.innerHTML.toLowerCase();
+                        const containerText = container.innerText.toLowerCase();
                         
-                        const isDone = hasGreenBtn || isDimmed || 
-                                     ((text.includes('done') || text.includes('selesai') || text.includes('terselesaikan')) && !text.includes('mark as done'));
+                        // Look for any success badge or icon in the day cell that might belong to this event
+                        const indicatesDone = containerHtml.includes('btn-success') || 
+                                             containerHtml.includes('badge-success') || 
+                                             containerHtml.includes('completionicon') ||
+                                             containerHtml.includes('fa-check') ||
+                                             dayHtml.includes('btn-success') ||
+                                             (containerText.includes('done') && !containerText.includes('mark as done')) ||
+                                             containerText.includes('selesai') ||
+                                             containerText.includes('terselesaikan') ||
+                                             window.getComputedStyle(ev).opacity < 0.8;
 
+                        // ROBUST COURSE NAME EXTRACTION
                         let courseName = "";
+                        // If rawTitle is "Course Name: Task Name", parts[0] is Course Name
                         if (rawTitle.includes(':')) {
-                            courseName = rawTitle.split(':')[0].trim();
-                        } else if (rawTitle.includes(' - ')) {
+                            const parts = rawTitle.split(':');
+                            if (parts.length > 1) {
+                                courseName = parts[0].trim();
+                                // Double check if courseName is actually the task (common Moodle bug)
+                                if (courseName.toLowerCase() === title.toLowerCase()) courseName = "";
+                            }
+                        }
+                        
+                        // If still no course name, check for common patterns in rawTitle like " - "
+                        if (!courseName && rawTitle.includes(' - ')) {
                             courseName = rawTitle.split(' - ')[0].trim();
                         }
-                        if (courseName.toLowerCase() === title.toLowerCase()) courseName = "";
 
                         return {
                             id: ev.getAttribute('data-event-id'),
                             title, url,
                             course: courseName,
                             deadlineTimestamp: timestamp,
-                            isSubmitted: isDone,
+                            isSubmitted: indicatesDone,
                             type: url.includes('assign') ? 'assignment' : (url.includes('quiz') ? 'quiz' : (url.includes('forum') ? 'forum' : 'activity')),
                             scrapedAt: new Date().toISOString()
                         };
@@ -210,13 +228,13 @@ module.exports = async function handler(req, res) {
                     const normUrl = normalizeUrl(oldItem.url);
                     const existing = resultsMap.get(normUrl);
                     if (!existing) {
-                        oldItem.url = normUrl;
+                        oldItem.url = normUrl; // Ensure normalized
                         finalResults.push(oldItem);
                     } else {
                         // Priority: If either history or current scrape says it's done, it's DONE
-                        if (oldItem.isSubmitted) {
-                            existing.isSubmitted = true;
-                        }
+                        if (oldItem.isSubmitted) existing.isSubmitted = true;
+                        // Preserve course name if current scrape missed it
+                        if (!existing.course && oldItem.course) existing.course = oldItem.course;
                     }
                 });
             }

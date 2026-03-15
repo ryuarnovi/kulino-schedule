@@ -370,26 +370,40 @@
                         // SMART MERGE: Don't just replace, merge carefully
                         const newDataMap = new Map();
                         
+                        // Normalizer helper for frontend
+                        const norm = (u) => {
+                            if (!u) return "";
+                            try {
+                                const urlObj = new URL(u, window.location.origin);
+                                const id = urlObj.searchParams.get('id');
+                                return urlObj.origin + urlObj.pathname + (id ? `?id=${id}` : "");
+                            } catch (e) { return u.split('?')[0]; }
+                        };
+
                         // Map old data for easy lookup
                         const oldDataMap = new Map();
-                        allData.forEach(item => oldDataMap.set(item.url, item));
+                        allData.forEach(item => oldDataMap.set(norm(item.url), item));
                         
                         freshData.forEach(item => {
                             if (!item.url) return;
-                            const existing = oldDataMap.get(item.url);
+                            const nUrl = norm(item.url);
+                            item.url = nUrl;
+                            const existing = oldDataMap.get(nUrl);
                             if (existing) {
                                 // Keep old course name if fresh one is missing
-                                if (!item.course && existing.course) item.course = existing.course;
+                                if ((!item.course || item.course === "") && existing.course) item.course = existing.course;
                                 // Keep completion status if either one has it
                                 item.isSubmitted = item.isSubmitted || existing.isSubmitted;
                             }
-                            newDataMap.set(item.url, item);
+                            newDataMap.set(nUrl, item);
                         });
                         
                         // Add items from old data that aren't in fresh data (history preservation)
                         allData.forEach(item => {
-                            if (!newDataMap.has(item.url)) {
-                                newDataMap.set(item.url, item);
+                            const nUrl = norm(item.url);
+                            if (!newDataMap.has(nUrl)) {
+                                item.url = nUrl;
+                                newDataMap.set(nUrl, item);
                             }
                         });
                         
