@@ -2,11 +2,11 @@
   {
     "id": "281361",
     "title": "QUIZ 1",
-    "course": "[20252] LITERASI INFORMASI - A11.46RPL",
+    "course": "",
     "deadlineTimestamp": 1772989200000,
     "url": "https://kulino.dinus.ac.id/mod/quiz/view.php?id=1823752",
     "type": "quiz",
-    "scrapedAt": "2026-03-20T08:45:46.894Z",
+    "scrapedAt": "2026-03-20T09:45:51.727Z",
     "description": "Quiz 1 untuk mengevaluasi Pertemuan Minggu 1 dan 2",
     "isSubmitted": false
   },
@@ -17,7 +17,7 @@
     "deadlineTimestamp": 1773648000000,
     "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1828251",
     "type": "forum",
-    "scrapedAt": "2026-03-20T08:45:47.709Z",
+    "scrapedAt": "2026-03-20T09:45:52.547Z",
     "description": "",
     "isSubmitted": false,
     "deadline": "Monday, 16 March 2026, 8:00 AM"
@@ -40,7 +40,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797116",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:45:54.103Z",
+    "scrapedAt": "2026-03-20T09:45:58.946Z",
     "description": "Buat 5 class yang masing masing memiliki 5 attribute. Buatkan juga 3 objek dari masing masing class. Tulis di kertas, foto lalu kumpulkan",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -63,7 +63,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797129",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:45:55.751Z",
+    "scrapedAt": "2026-03-20T09:46:00.580Z",
     "description": "Buatkan Class Diagram yang menerapkan class, attribute, method dan objek. Buat 1 class dengan 3 objek",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -75,7 +75,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797130",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:45:56.565Z",
+    "scrapedAt": "2026-03-20T09:46:01.421Z",
     "description": "Kerjakan:\n\n\nPraktikum 1: Latihan 2\nPraktikum 2: Latihan 1 dan Latihan 2\n\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -87,7 +87,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797131",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:45:57.386Z",
+    "scrapedAt": "2026-03-20T09:46:02.230Z",
     "description": "Buatkan Class Diagram yang menerapkan class, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -99,7 +99,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797133",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:45:58.203Z",
+    "scrapedAt": "2026-03-20T09:46:03.044Z",
     "description": "Kerjakan:\n\n\nPraktikum 3: Latihan 3 dan Latihan 4\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -111,7 +111,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797134",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:45:59.016Z",
+    "scrapedAt": "2026-03-20T09:46:03.857Z",
     "description": "Terapkan dari Class Diagram yang dibuat dari Tugas Teori 3.Kirim foto class diagram, source code dan hasil run dalam 1 pdf",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -123,7 +123,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797146",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:45:59.825Z",
+    "scrapedAt": "2026-03-20T09:46:06.177Z",
     "description": "Buatkan Class Diagram yang menerapkan class, construct, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -135,7 +135,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797149",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:46:00.634Z",
+    "scrapedAt": "2026-03-20T09:46:06.989Z",
     "description": "Kerjakan:\n\n\nPraktikum 4: Latihan 3 dan Latihan 4\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -147,7 +147,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797154",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:46:01.446Z",
+    "scrapedAt": "2026-03-20T09:46:07.799Z",
     "description": "Buat penerapan dari class diagram teori 4. Kirim dalam bentuk pdf, screenshot source code dan hasil run",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -159,7 +159,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797160",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:46:02.260Z",
+    "scrapedAt": "2026-03-20T09:46:08.613Z",
     "description": "Kerjakan:\n\n\nPraktikum 5: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -171,7 +171,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797161",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:46:03.075Z",
+    "scrapedAt": "2026-03-20T09:46:09.441Z",
     "description": "Buatkan Class Diagram yang menerapkan inheritence overriding lalu buat class, construct, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -183,7 +183,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797163",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:46:03.890Z",
+    "scrapedAt": "2026-03-20T09:46:10.256Z",
     "description": "Kerjakan:\n\n\nPraktikum 6: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -195,7 +195,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797168",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:46:04.698Z",
+    "scrapedAt": "2026-03-20T09:46:11.070Z",
     "description": "Kerjakan:\n\n\nPraktikum 7: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -207,7 +207,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797185",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:46:05.508Z",
+    "scrapedAt": "2026-03-20T09:46:11.882Z",
     "description": "",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
@@ -219,7 +219,7 @@
     "deadlineTimestamp": 1783209600000,
     "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797186",
     "type": "assignment",
-    "scrapedAt": "2026-03-20T08:46:06.319Z",
+    "scrapedAt": "2026-03-20T09:46:12.696Z",
     "description": "",
     "isSubmitted": false,
     "deadline": "Sunday, 5 July 2026, 12:00 AM"
