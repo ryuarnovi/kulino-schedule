@@ -6,18 +6,18 @@
     "deadlineTimestamp": 1772989200000,
     "url": "https://kulino.dinus.ac.id/mod/quiz/view.php?id=1823752",
     "type": "quiz",
-    "scrapedAt": "2026-03-31T11:53:13.689Z",
+    "scrapedAt": "2026-03-31T13:25:39.667Z",
     "description": "Quiz 1 untuk mengevaluasi Pertemuan Minggu 1 dan 2",
     "isSubmitted": false
   },
   {
     "id": "281603",
     "title": "Forum Kuis Pertemuan 3 jatuh tempo",
-    "course": "[20252] JARINGAN KOMPUTER  - A11.4417",
+    "course": "",
     "deadlineTimestamp": 1773648000000,
     "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1828251",
     "type": "forum",
-    "scrapedAt": "2026-03-31T11:53:14.504Z",
+    "scrapedAt": "2026-03-31T13:25:44.703Z",
     "description": "",
     "isSubmitted": false,
     "deadline": "Monday, 16 March 2026, 8:00 AM"
