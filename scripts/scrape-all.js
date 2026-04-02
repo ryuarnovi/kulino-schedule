@@ -97,11 +97,17 @@ async function deepScrape() {
             chunkRes.forEach(r => finalResults.push(...r));
         }
 
-        const dataFile = path.join(__dirname, '../public/deadlines.json');
-        fs.writeFileSync(dataFile, JSON.stringify(finalResults, null, 2));
-        console.log(`\n✨ Selesai! ${finalResults.length} entri disimpan.`);
 
-    } catch (error) { console.error('❌ Error:', error); } finally { await browser.close(); }
+        const dataFile = path.join(__dirname, '../public/deadlines.json');
+        fs.mkdirSync(path.dirname(dataFile), { recursive: true });
+        fs.writeFileSync(dataFile, JSON.stringify(finalResults, null, 2));
+        console.log(`\n✨ Selesai! ${finalResults.length} entri disimpan ke ${dataFile}.`);
+
+    } catch (error) { 
+        console.error('❌ Error fatal:', error); 
+    } finally { 
+        if (browser) await browser.close(); 
+    }
 }
 
 deepScrape();

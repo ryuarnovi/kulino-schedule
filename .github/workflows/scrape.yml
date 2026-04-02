@@ -1,38 +1,40 @@
-name: Kulino Auto Scraper
+name: Kulino Scraper Engine
 
 on:
   schedule:
-    - cron: '0 */4 * * *' # Jalan setiap 4 jam
-  workflow_dispatch:      # Bisa dijalankan manual dari tab Actions
+    - cron: '0 */4 * * *' # Run setiap 4 jam
+  workflow_dispatch: 
+
+permissions:
+  contents: write
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '20'
 
-      - name: Install Dependencies
-        run: |
-          npm install playwright playwright-core dotenv puppeteer-extra puppeteer-extra-plugin-stealth
-          npx playwright install chromium --with-deps
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
 
       - name: Run Scraper
+        run: node scripts/scrape-all.js
         env:
           KULINO_USERNAME: ${{ secrets.KULINO_USERNAME }}
           KULINO_PASSWORD: ${{ secrets.KULINO_PASSWORD }}
-        run: node scripts/scrape-all.js
 
-      - name: Commit and Push Changes
+      - name: Commit & Push
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add public/deadlines.json
-          git commit -m "chore: auto-update deadlines from Kulino [skip ci]" || echo "No changes to commit"
+          git commit -m "chore: auto-sync kulino deadlines [skip ci]" || echo "No changes"
           git push
