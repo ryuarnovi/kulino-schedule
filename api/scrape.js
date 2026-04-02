@@ -5,7 +5,7 @@ const fs = require('fs');
 
 module.exports = async function handler(req, res) {
     const isForce = req.query.force === 'true';
-    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
     const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
         if (fs.existsSync(dataPath)) {
             existingData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
             const latest = existingData.reduce((max, t) => Math.max(max, new Date(t.scrapedAt || 0).getTime()), 0);
-            if (!isForce && (Date.now() - latest < TWELVE_HOURS_MS)) {
+            if (!isForce && (Date.now() - latest < FOUR_HOURS_MS)) {
                 return res.status(200).json({ status: "cached", data: existingData });
             }
         }

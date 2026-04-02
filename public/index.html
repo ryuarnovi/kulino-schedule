@@ -501,20 +501,35 @@
                 .filter(c => c && c !== "GENERAL_ARCHIVE" && !c.includes('MBKM'));
             
             courseContainer.innerHTML = uniqueCourses.map(courseFull => {
-                // Bersihkan [20252] di depan
-                let clean = courseFull.replace(/^\[\d+\]\s*/, '');
-                const parts = clean.split(' - ');
+                // 1. Bersihkan Prefiks Angka (e.g. [20252] atau N201702-)
+                let clean = courseFull.replace(/^\[?\d+\]?\s*/, '')
+                                      .replace(/^[A-Z]+\d+-\d+-/, '') // N201702-20252-
+                                      .replace(/^[A-Z]+\d+-\d+-\s*/, '');
+
+                let name = "", code = "";
                 
-                // Nama Matkul (misal: RANGKAIAN LOGIKA DIGITAL)
-                const name = parts[0].trim();
-                // Kode (misal: A11.4404)
-                const code = parts.length > 1 ? parts[parts.length - 1].trim() : "";
+                // 2. Tentukan Nama & Kode (Dahulukan " - ")
+                if (clean.includes(' - ')) {
+                    const p = clean.split(' - ');
+                    name = p[0].trim();
+                    code = p[p.length - 1].trim();
+                } else if (clean.includes('-')) {
+                    const p = clean.split('-');
+                    code = p[p.length - 1].trim();
+                    name = p.slice(0, p.length - 1).join('-').trim() || code;
+                } else {
+                    name = clean.trim() || courseFull;
+                    code = "";
+                }
+
+                // Perkecil kode jika terlalu panjang (e.g. A11.4111_Jumat...)
+                const shortCode = code.split('_')[0];
 
                 return `
                     <button onclick="filterByCourse(this.dataset.course, this)" data-course="${courseFull.replace(/"/g, '&quot;')}" class="nav-btn w-full flex flex-col items-start px-6 py-3 rounded-lg clip-corners-sm hover:bg-white/5 transition-all text-text-muted group">
                         <span class="text-[9px] font-bold tech-text leading-tight group-hover:text-white transition-colors uppercase tracking-wider">${name}</span>
                         <div class="flex items-center justify-between w-full mt-1">
-                            <span class="text-[8px] opacity-30 font-mono tracking-tighter">${code}</span>
+                            <span class="text-[8px] opacity-30 font-mono tracking-tighter">${shortCode}</span>
                             <span class="text-[8px] opacity-20 font-mono">${allData.filter(i => i.course === courseFull).length}</span>
                         </div>
                     </button>

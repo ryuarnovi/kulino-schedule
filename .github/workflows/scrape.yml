@@ -2,7 +2,7 @@ name: Kulino Auto Scraper
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # Jalan setiap 12 jam (Jam 12 siang & 12 malam)
+    - cron: '0 */4 * * *' # Jalan setiap 4 jam
   workflow_dispatch:      # Bisa dijalankan manual dari tab Actions
 
 jobs:
