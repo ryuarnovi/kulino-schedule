@@ -229,7 +229,7 @@
                         <i data-lucide="refresh-cw" class="h-3 w-3" id="sync-icon"></i>
                         <span id="sync-text">SYNC_DATABASE</span>
                     </button>
-                    <div id="sync-timer" class="mt-4 text-[8px] tech-text opacity-30 text-center">NEXT_AUTO_SYNC: 05:00</div>
+                    <div id="sync-timer" class="mt-4 text-[8px] tech-text opacity-30 text-center">NEXT_AUTO_SYNC: 12:00:00</div>
                 </div>
             </div>
         </aside>
@@ -293,7 +293,7 @@
     <script>
         let allData = [];
         let filteredData = [];
-        let syncCountdown = 300; // 5 minutes in seconds
+        let syncCountdown = 43200; // 12 hours in seconds
         let manualArchives = JSON.parse(localStorage.getItem('manualArchives') || '[]');
 
         let isLoadingData = false;
@@ -309,18 +309,19 @@
                 syncCountdown--;
                 if (syncCountdown <= 0) {
                     loadData(true);
-                    syncCountdown = 300;
+                    syncCountdown = 43200; // Reset to 12 hours
                 }
                 updateSyncTimer();
             }, 1000);
         }
 
         function updateSyncTimer() {
-            const minutes = Math.floor(syncCountdown / 60);
+            const hours = Math.floor(syncCountdown / 3600);
+            const minutes = Math.floor((syncCountdown % 3600) / 60);
             const seconds = syncCountdown % 60;
             const timerEl = document.getElementById('sync-timer');
             if (timerEl) {
-                timerEl.innerText = `NEXT_AUTO_SYNC: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                timerEl.innerText = `NEXT_AUTO_SYNC: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             }
         }
 
@@ -433,7 +434,7 @@
                     
                     updateStats();
                     renderGrid();
-                    syncCountdown = 300;
+                    syncCountdown = 43200; // Reset to 12 hours
                 }
             } catch (e) {
                 console.error('LIVE_SYNC_FAILED:', e);
