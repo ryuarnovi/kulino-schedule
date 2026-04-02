@@ -4,34 +4,21 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports = async function handler(req, res) {
-    const startTime = Date.now();
-    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
     const isForce = req.query.force === 'true';
-
-    console.log("🚀 Serverless function started...");
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
     const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
     let existingData = [];
-    let lastScrapeTime = 0;
-
     try {
         if (fs.existsSync(dataPath)) {
             existingData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-            if (existingData.length > 0) {
-                const latestScrape = existingData.reduce((max, task) => {
-                    const time = task.scrapedAt ? new Date(task.scrapedAt).getTime() : 0;
-                    return time > max ? time : max;
-                }, 0);
-                lastScrapeTime = latestScrape;
+            const latest = existingData.reduce((max, t) => Math.max(max, new Date(t.scrapedAt || 0).getTime()), 0);
+            if (!isForce && (Date.now() - latest < TWELVE_HOURS_MS)) {
+                return res.status(200).json({ status: "cached", data: existingData });
             }
         }
-    } catch (e) { console.warn("⚠️ Gagal membaca cache:", e.message); }
-
-    if (!isForce && (Date.now() - lastScrapeTime < TWELVE_HOURS_MS)) {
-        console.log(`♻️ Menggunakan cache (Terakhir scrape: ${new Date(lastScrapeTime).toLocaleString()})`);
-        return res.status(200).json({ status: "cached", lastScrape: new Date(lastScrapeTime).toISOString(), data: existingData });
-    }
+    } catch (e) {}
 
     const username = process.env.KULINO_USERNAME;
     const password = process.env.KULINO_PASSWORD;
@@ -39,129 +26,84 @@ module.exports = async function handler(req, res) {
 
     let browser;
     try {
-        console.log("🔑 Memulai login...");
         browser = await chromium.launch({
-            args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--block-new-web-contents'],
+            args: [...chromiumPack.args, '--no-sandbox'],
             executablePath: await chromiumPack.executablePath(),
             headless: true,
         });
-        
-        const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 800 }
-        });
-        
-        await context.route('**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2,ico}', route => route.abort());
+        const context = await browser.newContext({ userAgent: 'Mozilla/5.0' });
+        await context.route('**/*.{png,jpg,css,woff2}', route => route.abort());
         const page = await context.newPage();
 
-        await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'domcontentloaded', timeout: 15000 });
+        // 1. LOGIN
+        console.log("🔑 Logging in...");
+        await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'domcontentloaded' });
         await page.fill('#username', username);
         await page.fill('#password', password);
-        await Promise.all([
-            page.waitForURL('**/my/**', { timeout: 15000, waitUntil: 'domcontentloaded' }).catch(() => null),
-            page.click('#loginbtn'),
-        ]);
+        await page.click('#loginbtn');
+        await page.waitForURL('**/my/**', { timeout: 15000 });
 
-        // Ambil User Name untuk deteksi forum
-        const userDisplayName = await page.evaluate(() => {
-            return document.querySelector('.userbutton .usertext')?.textContent?.trim() || '';
-        });
-
-        const currentMonthUrl = `https://kulino.dinus.ac.id/calendar/view.php?view=month`;
-        await page.goto(currentMonthUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
-        
-        const tasksToScrape = await page.evaluate(() => {
-            const results = [];
-            // Filter diperluas untuk mencakup Student Activity dan Forum
-            const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner', 'meeting'];
-            const events = Array.from(document.querySelectorAll('a[data-action="view-event"]'));
-            
-            events.forEach(ev => {
-                const rawTitle = ev.getAttribute('title') || '';
-                const url = ev.href;
-                const title = rawTitle.replace(/\s+is\s+due$/i, '').replace(/\s+opens$/i, '').trim();
-                const isValid = filter.some(f => title.toLowerCase().includes(f)) || url.includes('assign') || url.includes('quiz') || url.includes('forum');
-                
-                if (isValid) {
-                    const dayCell = ev.closest('td.day');
-                    results.push({
-                        id: ev.getAttribute('data-event-id'),
-                        title, url,
-                        deadlineTimestamp: dayCell ? parseInt(dayCell.getAttribute('data-day-timestamp')) * 1000 : null
-                    });
+        // 2. GET COURSE LIST
+        console.log("📚 Getting course list...");
+        const courses = await page.evaluate(() => {
+            const list = [];
+            // Deteksi link mata kuliah (biasanya di dashboard /my/)
+            document.querySelectorAll('a[href*="course/view.php?id="]').forEach(a => {
+                const url = a.href.split('&')[0]; // Clean URL
+                const name = a.innerText.trim();
+                if (name && !list.some(c => c.url === url) && !name.includes('Summary')) {
+                    list.push({ name, url });
                 }
             });
-            return results;
+            return list.slice(0, 10); // Ambil 10 matkul teratas agar tidak timeout
         });
 
-        const CONCURRENCY_LIMIT = 3; 
-        const results = [];
+        const allTasksMap = new Map();
 
-        const scrapeTask = async (task) => {
-            const taskPage = await context.newPage();
+        // 3. DEEP CRAWL EACH COURSE
+        const scrapeCourse = async (course) => {
+            const cp = await context.newPage();
             try {
-                await taskPage.route('**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2,ico}', route => route.abort());
-                await taskPage.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 10000 });
-                const btn = await taskPage.$('a.btn-primary[href*="mod/"]');
-                if (btn) {
-                    const activityLink = await btn.getAttribute('href');
-                    await taskPage.goto(activityLink, { waitUntil: 'domcontentloaded', timeout: 8000 });
-                }
-
-                const detail = await taskPage.evaluate((userName) => {
-                    let deadline = '', isSubmitted = false, courseName = '', description = document.querySelector('#intro .no-overflow')?.textContent?.trim() || '';
-                    const bread = document.querySelectorAll('.breadcrumb-item a');
-                    if (bread.length >= 3) courseName = bread[2].innerText.trim();
-                    const dateDivs = document.querySelectorAll('[data-region="activity-dates"] > div');
-                    dateDivs.forEach(div => {
-                        const txt = div.textContent.trim();
-                        if (txt.includes('Due:') || txt.includes('Closes:')) deadline = txt.replace(/Due:|Closes:/, '').trim();
+                await cp.goto(course.url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+                const tasks = await cp.evaluate((courseInfo) => {
+                    const found = [];
+                    // Cari forum, assign, quiz
+                    const selectors = '.activity.assign, .activity.quiz, .activity.forum, .activity.lti, .modtype_assign, .modtype_forum, .modtype_quiz';
+                    document.querySelectorAll(selectors).forEach(el => {
+                        const link = el.querySelector('a');
+                        if (!link) return;
+                        
+                        const title = link.innerText.replace('Assignment', '').replace('Forum', '').trim();
+                        const url = link.href;
+                        
+                        // Deteksi Centang Selesai (Moodle 4.x)
+                        const isDone = !!el.querySelector('.badge-success, [data-region="completion-toggle"].btn-success, .completion-auto-pass, [aria-label*="Done"], [aria-label*="Selesai"]');
+                        
+                        found.push({
+                            id: url.split('id=')[1],
+                            title,
+                            url,
+                            course: courseInfo.name,
+                            isSubmitted: isDone,
+                            type: url.includes('forum') ? 'forum' : (url.includes('quiz') ? 'quiz' : 'assignment'),
+                            scrapedAt: new Date().toISOString()
+                        });
                     });
-                    
-                    // 1. Cek Tabel Submission (Assignment/Quiz)
-                    const rows = document.querySelectorAll('.submissionstatustable tr');
-                    rows.forEach(row => {
-                        const th = row.querySelector('th')?.innerText.toLowerCase() || '', td = row.querySelector('td')?.innerText.toLowerCase() || '';
-                        if (th.includes('status') && (td.includes('submitted') || td.includes('dikumpulkan'))) isSubmitted = true;
-                    });
-
-                    // 2. Cek Tombol "Mark Done" (Manual)
-                    if (!isSubmitted) {
-                        const completionBtn = document.querySelector('[data-region="completion-toggle"], .completion-dialog-button, .btn-outline-success, .btn-success');
-                        if (completionBtn && (completionBtn.innerText.toLowerCase().includes('done') || completionBtn.innerText.toLowerCase().includes('selesai'))) isSubmitted = true;
-                    }
-
-                    // 3. Cek Partisipasi Forum (Otomatis)
-                    if (!isSubmitted && userName && location.href.includes('mod/forum')) {
-                        const authors = Array.from(document.querySelectorAll('.author, .post-author, .user-name'));
-                        if (authors.some(a => a.textContent.includes(userName))) isSubmitted = true;
-                        if (document.body.innerText.includes('Your post has been added')) isSubmitted = true;
-                    }
-
-                    return { description, isSubmitted, deadline, courseName };
-                }, userDisplayName);
-
-                return {
-                    ...task,
-                    course: detail.courseName,
-                    description: detail.description,
-                    isSubmitted: detail.isSubmitted,
-                    deadline: detail.deadline,
-                    type: task.url.includes('forum') ? 'forum' : (task.url.includes('assign') ? 'assignment' : (task.url.includes('quiz') ? 'quiz' : 'activity')),
-                    scrapedAt: new Date().toISOString()
-                };
-            } catch (e) { return task; }
-            finally { await taskPage.close(); }
+                    return found;
+                }, course);
+                tasks.forEach(t => allTasksMap.set(t.url, t));
+            } catch (e) { console.error(`Error scraping ${course.name}:`, e.message); }
+            finally { await cp.close(); }
         };
 
-        for (let i = 0; i < tasksToScrape.length; i += CONCURRENCY_LIMIT) {
-            const chunk = tasksToScrape.slice(i, i + CONCURRENCY_LIMIT);
-            const chunkResults = await Promise.all(chunk.map(t => scrapeTask(t)));
-            results.push(...chunkResults);
+        // Run in chunks of 3 courses
+        for (let i = 0; i < courses.length; i += 3) {
+            await Promise.all(courses.slice(i, i + 3).map(c => scrapeCourse(c)));
         }
 
         await browser.close();
-        console.log(`✨ Scrape selesai.`);
+        const results = Array.from(allTasksMap.values());
+        console.log(`✨ Deep Scrape Success: ${results.length} tasks found.`);
         return res.status(200).json(results);
 
     } catch (error) { if (browser) await browser.close(); return res.status(500).json({ error: error.message }); }
