@@ -47,15 +47,16 @@ module.exports = async function handler(req, res) {
         console.log("📚 Getting course list...");
         const courses = await page.evaluate(() => {
             const list = [];
-            // Deteksi link mata kuliah (biasanya di dashboard /my/)
             document.querySelectorAll('a[href*="course/view.php?id="]').forEach(a => {
-                const url = a.href.split('&')[0]; // Clean URL
+                const url = a.href.split('&')[0];
                 const name = a.innerText.trim();
-                if (name && !list.some(c => c.url === url) && !name.includes('Summary')) {
+                const isMBKM = name.toUpperCase().includes('MBKM');
+                
+                if (name && !list.some(c => c.url === url) && !name.includes('Summary') && !isMBKM) {
                     list.push({ name, url });
                 }
             });
-            return list.slice(0, 10); // Ambil 10 matkul teratas agar tidak timeout
+            return list.slice(0, 10);
         });
 
         const allTasksMap = new Map();

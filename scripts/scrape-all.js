@@ -33,8 +33,10 @@ async function deepScrape() {
             document.querySelectorAll('a[href*="course/view.php?id="]').forEach(a => {
                 const url = a.href.split('&')[0];
                 const name = a.innerText.trim();
+                const isMBKM = name.toUpperCase().includes('MBKM');
+                
                 // Filter out non-course links like 'Summary' or 'Participants'
-                if (name && !list.some(c => c.url === url) && name.length > 5 && !name.includes('Summary')) {
+                if (name && !list.some(c => c.url === url) && name.length > 5 && !name.includes('Summary') && !isMBKM) {
                     list.push({ name, url });
                 }
             });
