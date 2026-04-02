@@ -179,6 +179,23 @@ async function scrapeDeep() {
                         if (!quizBtn && document.body.innerText.includes('quiz has been submitted')) isSubmitted = true;
                     }
 
+                    // --- DETEKSI BARU: Mark as Done / Completion Status ---
+                    if (!isSubmitted) {
+                        // 1. Cek tombol manual "Done" (Moodle 4.x)
+                        const completionBtn = document.querySelector('[data-region="completion-toggle"]');
+                        if (completionBtn && (completionBtn.innerText.toLowerCase().includes('done') || completionBtn.innerText.toLowerCase().includes('selesai'))) {
+                            isSubmitted = true;
+                        }
+                        
+                        // 2. Cek status label kelulusan/centang hijau
+                        const doneLabel = document.querySelector('.completioninfo .badge-success, .automatic-completion-conditions [aria-label*="Done"], .automatic-completion-conditions [aria-label*="Selesai"]');
+                        if (doneLabel) isSubmitted = true;
+
+                        // 3. Cek centang manual lama
+                        const manualCheck = document.querySelector('img[src*="i/completion-manual-y"], img[src*="i/completion-auto-y"]');
+                        if (manualCheck) isSubmitted = true;
+                    }
+
                     return { description, isSubmitted, deadline, courseName };
                 }, userDisplayName);
 

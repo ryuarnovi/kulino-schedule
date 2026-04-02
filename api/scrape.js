@@ -125,6 +125,18 @@ module.exports = async function handler(req, res) {
                         const th = row.querySelector('th')?.innerText.toLowerCase() || '', td = row.querySelector('td')?.innerText.toLowerCase() || '';
                         if (th.includes('status') && (td.includes('submitted') || td.includes('dikumpulkan'))) isSubmitted = true;
                     });
+
+                    // --- DETEKSI: Mark as Done / Completion Status ---
+                    if (!isSubmitted) {
+                        const completionBtn = document.querySelector('[data-region="completion-toggle"]');
+                        if (completionBtn && (completionBtn.innerText.toLowerCase().includes('done') || completionBtn.innerText.toLowerCase().includes('selesai'))) {
+                            isSubmitted = true;
+                        }
+                        const doneLabel = document.querySelector('.completioninfo .badge-success, .automatic-completion-conditions [aria-label*="Done"]');
+                        if (doneLabel) isSubmitted = true;
+                        if (document.querySelector('img[src*="i/completion-manual-y"], img[src*="i/completion-auto-y"]')) isSubmitted = true;
+                    }
+
                     return { description, isSubmitted, deadline, courseName };
                 });
 
