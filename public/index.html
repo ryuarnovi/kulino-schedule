@@ -503,11 +503,8 @@
                 const parts = courseFull.split(' - ');
                 const code = parts.length > 1 ? parts[parts.length - 1] : courseFull;
 
-                // Gunakan encodeURIComponent untuk keamanan data-attribute
-                const safeCourse = encodeURIComponent(courseFull);
-
                 return `
-                    <button onclick="filterByCourse(decodeURIComponent('${safeCourse}'))" class="nav-btn w-full flex items-center justify-between px-6 py-2.5 rounded-lg clip-corners-sm hover:bg-white/5 transition-all text-text-muted group">
+                    <button onclick="filterByCourse(this.dataset.course, this)" data-course="${courseFull.replace(/"/g, '&quot;')}" class="nav-btn w-full flex items-center justify-between px-6 py-2.5 rounded-lg clip-corners-sm hover:bg-white/5 transition-all text-text-muted group">
                         <div class="flex items-center gap-3">
                             <i data-lucide="hash" class="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity"></i>
                             <span class="text-[9px] font-bold tech-text leading-tight">${code}</span>
@@ -520,10 +517,10 @@
             lucide.createIcons();
         }
 
-        function filterByCourse(courseName) {
+        function filterByCourse(courseName, el) {
             const btns = document.querySelectorAll('.nav-btn');
             btns.forEach(b => b.classList.remove('sidebar-active'));
-            event.currentTarget.classList.add('sidebar-active');
+            if (el) el.classList.add('sidebar-active');
 
             filteredData = allData.filter(i => i.course === courseName);
             renderGrid();
