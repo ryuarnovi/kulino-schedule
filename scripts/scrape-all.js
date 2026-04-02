@@ -27,18 +27,29 @@ async function deepScrape() {
         await page.fill('#password', password);
         await Promise.all([ page.waitForURL('**/my/**', { timeout: 30000 }), page.click('#loginbtn') ]);
 
-        console.log('📂 Membuka daftar lengkap mata kuliah...');
+        console.log('📂 Membuka daftar lengkap mata kuliah (Mode: EXC_MBKM)...');
         await page.goto('https://kulino.dinus.ac.id/my/courses.php', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(5000); // Tunggu render client-side
+        
+        // Scroll ke bawah untuk memastikan semua lazy-load course muncul
+        await page.evaluate(async () => {
+            for (let i = 0; i < 6; i++) {
+                window.scrollBy(0, window.innerHeight);
+                await new Promise(r => setTimeout(r, 600));
+            }
+        });
 
         const courses = await page.evaluate(() => {
             const list = [];
-            const links = document.querySelectorAll('a[href*="course/view.php?id="]');
+            // Target semua kemungkinan link maktul
+            const links = document.querySelectorAll('a[href*="course/view.php?id="], .coursename a, a.course-name');
             links.forEach(a => {
                 const url = a.href.split('&')[0];
                 const name = a.innerText.trim();
-                const isMBKM = name.toUpperCase().includes('MBKM');
-                if (name && !list.some(c => c.url === url) && name.length > 5 && !name.includes('Summary') && !isMBKM) {
+                const ln = name.toLowerCase();
+                const isMBKM = ln.includes('mbkm') || ln.includes('magang') || ln.includes('studi independen');
+                
+                // FILTER: Ambil semua kecuali MBKM dan Summary
+                if (name && !list.some(c => c.url === url) && name.length >= 2 && !ln.includes('summary') && !isMBKM) {
                     list.push({ name, url });
                 }
             });
@@ -60,7 +71,7 @@ async function deepScrape() {
                     
                     if (elements.length === 0) {
                         found.push({
-                            id: 'empty-' + c.url.split('id=')[1],
+                            id: 'empty-' + (c.url.split('id=')[1] || Math.random().toString(36).substr(2, 5)),
                             title: 'NO_ACTIVE_TASKS_DETECTOR',
                             url: c.url,
                             course: c.name,
