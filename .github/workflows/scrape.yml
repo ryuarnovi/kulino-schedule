@@ -20,7 +20,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm install playwright playwright-core dotenv
+          npm install playwright playwright-core dotenv puppeteer-extra puppeteer-extra-plugin-stealth
           npx playwright install chromium --with-deps
 
       - name: Run Scraper
