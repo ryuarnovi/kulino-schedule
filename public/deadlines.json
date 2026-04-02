@@ -1,251 +1,586 @@
 [
   {
-    "id": "282438",
-    "title": "Tugas ke-1 Susulan",
-    "course": "[20252] SISTEM BASIS DATA - A11.44RPL",
-    "deadlineTimestamp": 1775523540000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1851340",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:29.080Z",
-    "description": "Tugas ke-1 Susulan\nSoal tugas ke-1 terdapat di Materi kuliah ke-2, slide 33-34",
+    "id": "1668225",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1668225",
+    "course": "N201702-20252-A11.4614",
     "isSubmitted": false,
-    "deadline": "Tuesday, 7 April 2026, 12:59 AM"
-  },
-  {
-    "id": "280481",
-    "title": "Teori 1",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797116",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:34.871Z",
-    "description": "Buat 5 class yang masing masing memiliki 5 attribute. Buatkan juga 3 objek dari masing masing class. Tulis di kertas, foto lalu kumpulkan",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280482",
-    "title": "Praktikum 1",
-    "course": "",
-    "deadlineTimestamp": 1772668800000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797118",
-    "scrapedAt": "2026-03-11T19:44:26.839Z",
-    "description": "Kumpulkan bentuk PDF.\n\nScreenshot bukti instalasi di komputer/laptop\nScreenshot tampilan output biodata diri. Bisa input nilai plus",
-    "isSubmitted": true,
-    "deadline": "Thursday, 5 March 2026, 12:00 AM"
-  },
-  {
-    "id": "280484",
-    "title": "Teori 2",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797129",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:36.512Z",
-    "description": "Buatkan Class Diagram yang menerapkan class, attribute, method dan objek. Buat 1 class dengan 3 objek",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280485",
-    "title": "Praktikum 2",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797130",
-    "type": "assignment",
-    "scrapedAt": "2026-03-31T11:53:22.498Z",
-    "description": "Kerjakan:\n\n\nPraktikum 1: Latihan 2\nPraktikum 2: Latihan 1 dan Latihan 2\n\n\nKirim screenshot dan hasil run dalam bentuk PDF",
-    "isSubmitted": true,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280486",
-    "title": "Teori 3",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797131",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:38.153Z",
-    "description": "Buatkan Class Diagram yang menerapkan class, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280487",
-    "title": "Praktikum 3",
-    "course": "",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797133",
-    "type": "assignment",
-    "scrapedAt": "2026-03-31T15:05:54.208Z",
-    "description": "Kerjakan:\n\n\nPraktikum 3: Latihan 3 dan Latihan 4\n\nKirim screenshot dan hasil run dalam bentuk PDF",
-    "isSubmitted": true,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280488",
-    "title": "Praktikum 3 - 2",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797134",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:39.796Z",
-    "description": "Terapkan dari Class Diagram yang dibuat dari Tugas Teori 3.Kirim foto class diagram, source code dan hasil run dalam 1 pdf",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280494",
-    "title": "Teori 4",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797146",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:40.616Z",
-    "description": "Buatkan Class Diagram yang menerapkan class, construct, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280496",
-    "title": "Praktikum 4",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797149",
-    "type": "assignment",
-    "scrapedAt": "2026-03-31T15:06:09.466Z",
-    "description": "Kerjakan:\n\n\nPraktikum 4: Latihan 3 dan Latihan 4\n\nKirim screenshot dan hasil run dalam bentuk PDF",
-    "isSubmitted": true,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280499",
-    "title": "Prakikum 4 - 2",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797154",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:42.255Z",
-    "description": "Buat penerapan dari class diagram teori 4. Kirim dalam bentuk pdf, screenshot source code dan hasil run",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280504",
-    "title": "Praktikum 5",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797160",
-    "type": "assignment",
-    "scrapedAt": "2026-03-31T19:06:17.920Z",
-    "description": "Kerjakan:\n\n\nPraktikum 5: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
-    "isSubmitted": true,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280505",
-    "title": "Teori 5",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797161",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:44.391Z",
-    "description": "Buatkan Class Diagram yang menerapkan inheritence overriding lalu buat class, construct, attribute, method (termasuk setter dan getter) dan objek. Buat 1 class dengan 3 objek",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280507",
-    "title": "Praktikum 6",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797163",
-    "type": "assignment",
-    "scrapedAt": "2026-03-31T19:06:19.541Z",
-    "description": "Kerjakan:\n\n\nPraktikum 6: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
-    "isSubmitted": true,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280509",
-    "title": "Praktikum 7",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797168",
-    "type": "assignment",
-    "scrapedAt": "2026-03-31T19:06:20.358Z",
-    "description": "Kerjakan:\n\n\nPraktikum 7: Latihan 1 dan Latihan 2\n\nKirim screenshot dan hasil run dalam bentuk PDF",
-    "isSubmitted": true,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280512",
-    "title": "UTS Simulasi - Teori",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797185",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:46.844Z",
-    "description": "",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "280513",
-    "title": "UTS Simulasi - Praktikum",
-    "course": "[20252] PEMROGRAMAN BERORIENTASI OBJEK - A11.4402",
-    "deadlineTimestamp": 1783209600000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797186",
-    "type": "assignment",
-    "scrapedAt": "2026-04-02T02:34:47.662Z",
-    "description": "",
-    "isSubmitted": false,
-    "deadline": "Sunday, 5 July 2026, 12:00 AM"
-  },
-  {
-    "id": "281361",
-    "title": "QUIZ 1",
-    "course": "",
-    "deadlineTimestamp": 1772989200000,
-    "url": "https://kulino.dinus.ac.id/mod/quiz/view.php?id=1823752",
-    "type": "quiz",
-    "scrapedAt": "2026-03-31T15:05:28.592Z",
-    "description": "Quiz 1 untuk mengevaluasi Pertemuan Minggu 1 dan 2",
-    "isSubmitted": false
-  },
-  {
-    "id": "281603",
-    "title": "Forum Kuis Pertemuan 3 jatuh tempo",
-    "course": "[20252] JARINGAN KOMPUTER  - A11.4417",
-    "deadlineTimestamp": 1773648000000,
-    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1828251",
     "type": "forum",
-    "scrapedAt": "2026-03-31T15:05:29.423Z",
-    "description": "",
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
+  },
+  {
+    "id": "1806154",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1806154",
+    "course": "N201702-20252-A11.4614",
     "isSubmitted": false,
-    "deadline": "Monday, 16 March 2026, 8:00 AM"
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
   },
   {
-    "id": "280738",
-    "title": "Repositori#1",
-    "course": "[20252] PEMBELAJARAN MESIN - A11.4405",
-    "deadlineTimestamp": 1774476000000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1798483",
-    "scrapedAt": "2026-03-11T19:44:28.985Z",
-    "description": "Kirim link repository online dari praktikum pertemuan berjalan(Contoh Repository Online : Github, Gitlab, BitBucket)\n\nLakukan proses setup environment praktikum menggunakan bahasa pemrograman python, bisa menggunakan Anaconda Navigator, mini conda, google colab, atau yang lainnya.\nBuka folder Minggu-2/python pada folder materi, running script yang ada disitu dan bisa dimprovisasikan praktikum yang lain.",
-    "isSubmitted": true,
-    "deadline": "Wednesday, 25 March 2026, 10:00 PM"
+    "id": "1806158",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1806158",
+    "course": "N201702-20252-A11.4614",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
   },
   {
-    "id": "280724",
-    "title": "Tugas Ke-1",
-    "course": "",
-    "deadlineTimestamp": 1773791940000,
-    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1798460",
+    "id": "1806181",
+    "title": "Diskusi",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1806181",
+    "course": "N201702-20252-A11.4614",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
+  },
+  {
+    "id": "1816789",
+    "title": "Students activities",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1816789",
+    "course": "N201702-20252-A11.4614",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
+  },
+  {
+    "id": "1836959",
+    "title": "Students activities",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1836959",
+    "course": "N201702-20252-A11.4614",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
+  },
+  {
+    "id": "1851568",
+    "title": "students activities",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1851568",
+    "course": "N201702-20252-A11.4614",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
+  },
+  {
+    "id": "1806224",
+    "title": "Ujian Tengah Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1806224",
+    "course": "N201702-20252-A11.4614",
+    "isSubmitted": false,
     "type": "assignment",
-    "scrapedAt": "2026-03-15T09:38:24.431Z",
-    "description": "Tugas ke-1 tersedia di Materi slide yang ke-34",
-    "isSubmitted": true,
-    "deadline": "Tuesday, 17 March 2026, 11:59 PM"
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
+  },
+  {
+    "id": "1806249",
+    "title": "Ujian Akhir Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1806249",
+    "course": "N201702-20252-A11.4614",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:53:59.120Z"
+  },
+  {
+    "id": "1668211",
+    "title": "PENGUMUMAN",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1668211",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1823720",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1823720",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1823722",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1823722",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1823735",
+    "title": "Diskusi",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1823735",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1793039",
+    "title": "Pertemuan 1. Publishing Literacy",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1793039",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1823743",
+    "title": "REFLEKSI",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1823743",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1823752",
+    "title": "QUIZ 1",
+    "url": "https://kulino.dinus.ac.id/mod/quiz/view.php?id=1823752",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "quiz",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1823768",
+    "title": "Ujian Tengah Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1823768",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1823793",
+    "title": "Ujian Akhir Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1823793",
+    "course": "AF201702-20252-A11.46RPL",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:00.222Z"
+  },
+  {
+    "id": "1668014",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1668014",
+    "course": "A11.64407-20252-A11.4404",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.485Z"
+  },
+  {
+    "id": "1847560",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1847560",
+    "course": "A11.64407-20252-A11.4404",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.485Z"
+  },
+  {
+    "id": "1847562",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1847562",
+    "course": "A11.64407-20252-A11.4404",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.485Z"
+  },
+  {
+    "id": "1847575",
+    "title": "Diskusi",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1847575",
+    "course": "A11.64407-20252-A11.4404",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:53:59.485Z"
+  },
+  {
+    "id": "1847597",
+    "title": "Ujian Tengah Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1847597",
+    "course": "A11.64407-20252-A11.4404",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:53:59.485Z"
+  },
+  {
+    "id": "1847622",
+    "title": "Ujian Akhir Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1847622",
+    "course": "A11.64407-20252-A11.4404",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:53:59.485Z"
+  },
+  {
+    "id": "1668008",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1668008",
+    "course": "A11.64406-20252-A11.44RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.389Z"
+  },
+  {
+    "id": "1848764",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1848764",
+    "course": "A11.64406-20252-A11.44RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.389Z"
+  },
+  {
+    "id": "1848766",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1848766",
+    "course": "A11.64406-20252-A11.44RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.389Z"
+  },
+  {
+    "id": "1848779",
+    "title": "Diskusi",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1848779",
+    "course": "A11.64406-20252-A11.44RPL",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.389Z"
+  },
+  {
+    "id": "1851340",
+    "title": "Tugas ke-1 Susulan",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1851340",
+    "course": "A11.64406-20252-A11.44RPL",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:01.389Z"
+  },
+  {
+    "id": "1848801",
+    "title": "Ujian Tengah Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1848801",
+    "course": "A11.64406-20252-A11.44RPL",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:01.389Z"
+  },
+  {
+    "id": "1848826",
+    "title": "Ujian Akhir Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1848826",
+    "course": "A11.64406-20252-A11.44RPL",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:01.389Z"
+  },
+  {
+    "id": "1667975",
+    "title": "Link Google Meet",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1667975",
+    "course": "A11.64405-20252-A11.4405",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:02.623Z"
+  },
+  {
+    "id": "1832449",
+    "title": "Diskusi",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1832449",
+    "course": "A11.64405-20252-A11.4405",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:02.623Z"
+  },
+  {
+    "title": "Github",
+    "url": "https://github.com/",
+    "course": "A11.64405-20252-A11.4405",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:02.623Z"
+  },
+  {
+    "id": "1832471",
+    "title": "Ujian Tengah Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1832471",
+    "course": "A11.64405-20252-A11.4405",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:02.623Z"
+  },
+  {
+    "id": "1832496",
+    "title": "Ujian Akhir Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1832496",
+    "course": "A11.64405-20252-A11.4405",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:02.623Z"
+  },
+  {
+    "id": "1667960",
+    "title": "Pemrograman Web Lanjut",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1667960",
+    "course": "A11.64404-20252-A11.4411_Jum'at_12.30-14.10_D.2.K",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.907Z"
+  },
+  {
+    "id": "1836110",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1836110",
+    "course": "A11.64404-20252-A11.4411_Jum'at_12.30-14.10_D.2.K",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.907Z"
+  },
+  {
+    "id": "1836112",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1836112",
+    "course": "A11.64404-20252-A11.4411_Jum'at_12.30-14.10_D.2.K",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.907Z"
+  },
+  {
+    "id": "1836125",
+    "title": "Diskusi",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1836125",
+    "course": "A11.64404-20252-A11.4411_Jum'at_12.30-14.10_D.2.K",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.907Z"
+  },
+  {
+    "id": "1789959",
+    "title": "Pertemuan 1 - Pemrograman Web Lanjut",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1789959",
+    "course": "A11.64404-20252-A11.4411_Jum'at_12.30-14.10_D.2.K",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.907Z"
+  },
+  {
+    "id": "1799851",
+    "title": "Pertemuan 2 - Pemrograman Berbasis Objek dengan PHP",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1799851",
+    "course": "A11.64404-20252-A11.4411_Jum'at_12.30-14.10_D.2.K",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:01.907Z"
+  },
+  {
+    "id": "1836147",
+    "title": "Ujian Tengah Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1836147",
+    "course": "A11.64404-20252-A11.4411_Jum'at_12.30-14.10_D.2.K",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:01.907Z"
+  },
+  {
+    "id": "1836172",
+    "title": "Ujian Akhir Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1836172",
+    "course": "A11.64404-20252-A11.4411_Jum'at_12.30-14.10_D.2.K",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:01.907Z"
+  },
+  {
+    "id": "1834039",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1834039",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1834041",
+    "title": "Announcements",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1834041",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1834054",
+    "title": "Diskusi",
+    "url": "https://kulino.dinus.ac.id/mod/forum/view.php?id=1834054",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "forum",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1797116",
+    "title": "Teori 1",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797116",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1797118",
+    "title": "Praktikum 1",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797118",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1797129",
+    "title": "Teori 2",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797129",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1797130",
+    "title": "Praktikum 2",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797130",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1797131",
+    "title": "Teori 3",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797131",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1797133",
+    "title": "Praktikum 3",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797133",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1797134",
+    "title": "Praktikum 3 - 2",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797134",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.881Z"
+  },
+  {
+    "id": "1797146",
+    "title": "Teori 4",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797146",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1797149",
+    "title": "Praktikum 4",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797149",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1797154",
+    "title": "Prakikum 4 - 2",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797154",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1797160",
+    "title": "Praktikum 5",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797160",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1797161",
+    "title": "Teori 5",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797161",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1797163",
+    "title": "Praktikum 6",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797163",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1797168",
+    "title": "Praktikum 7",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797168",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1797185",
+    "title": "UTS Simulasi - Teori",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797185",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1797186",
+    "title": "UTS Simulasi - Praktikum",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1797186",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1834076",
+    "title": "Ujian Tengah Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1834076",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
+  },
+  {
+    "id": "1834101",
+    "title": "Ujian Akhir Semester",
+    "url": "https://kulino.dinus.ac.id/mod/assign/view.php?id=1834101",
+    "course": "A11.64403-20252-A11.4402",
+    "isSubmitted": false,
+    "type": "assignment",
+    "scrapedAt": "2026-04-02T12:54:03.882Z"
   }
 ]
