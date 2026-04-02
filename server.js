@@ -32,6 +32,5 @@ app.get('/api/scrape', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Task Only Server running on http://localhost:${PORT}`);
-    console.log(`📂 Serving dashboard from: ${path.join(__dirname, 'public/index.html')}`);
+    // Hidden local logs for clean production logs
 });
