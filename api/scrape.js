@@ -1,24 +1,34 @@
-const { chromium } = require('playwright-extra');
+const { chromium } = require('playwright-core');
+const { chromium: chromiumExtra } = require('playwright-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const chromiumPack = require('@sparticuz/chromium');
 const path = require('path');
 const fs = require('fs');
 
-// Gunakan plugin stealth untuk bypass deteksi bot
-chromium.use(StealthPlugin());
+// Gunakan plugin stealth tapi kita bungkus secara manual
+const stealth = StealthPlugin();
 
 module.exports = async function handler(req, res) {
     const startTime = Date.now();
+    console.log("🚀 Serverless function started...");
+    
+    // Set headers untuk mencegah cache
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     
     const username = process.env.KULINO_USERNAME;
     const password = process.env.KULINO_PASSWORD;
 
-    if (!username || !password) return res.status(401).json({ error: 'Missing Credentials' });
+    if (!username || !password) {
+        console.error("❌ Credentials missing!");
+        return res.status(401).json({ error: 'Missing Credentials' });
+    }
 
     let browser;
     try {
+        console.log("📦 Launching browser...");
+        
         // --- LAUNCH BROWSER (VERCEL OPTIMIZED) ---
+        // Kita menggunakan playwright-core secara langsung agar lebih stabil di Vercel
         browser = await chromium.launch({
             args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--block-new-web-contents'],
             executablePath: await chromiumPack.executablePath(),
@@ -35,22 +45,22 @@ module.exports = async function handler(req, res) {
         const page = await context.newPage();
 
         // 1. LOGIN
-        console.log("🌐 Memulai Login...");
-        await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'commit', timeout: 10000 });
+        console.log("🔑 Logging in to Kulino...");
+        await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'domcontentloaded', timeout: 15000 });
         await page.fill('#username', username);
         await page.fill('#password', password);
         await Promise.all([
-            page.waitForURL('**/my/**', { timeout: 10000, waitUntil: 'commit' }).catch(() => null),
+            page.waitForURL('**/my/**', { timeout: 15000, waitUntil: 'domcontentloaded' }).catch(() => null),
             page.click('#loginbtn'),
         ]);
 
         const userDisplayName = await page.evaluate(() => {
             return document.querySelector('.userbutton .usertext')?.textContent?.trim() || '';
         });
+        console.log(`👤 Logged in as: ${userDisplayName}`);
 
         // 2. SCRAPE CALENDAR LIST
-        console.log("📅 Scraping Kalender...");
-        // Kita cukup ambil 3 bulan untuk vercel agar tidak timeout (Hobby limit 10s)
+        console.log("📅 Fetching calendar events...");
         const currentMonthUrl = `https://kulino.dinus.ac.id/calendar/view.php?view=month`;
         await page.goto(currentMonthUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
         
@@ -77,9 +87,9 @@ module.exports = async function handler(req, res) {
             return results;
         });
 
-        // 3. PARALLEL INSPECTION (Batas 5 tab)
-        console.log(`🚀 Memproses ${tasksToScrape.length} tugas secara paralel...`);
-        const CONCURRENCY_LIMIT = 5;
+        // 3. PARALLEL INSPECTION (Batas 3 tab untuk Vercel agar tidak melebihi RAM/CPU limit)
+        console.log(`🚀 Parallel processing ${tasksToScrape.length} tasks...`);
+        const CONCURRENCY_LIMIT = 3; 
         const results = [];
 
         const scrapeTask = async (task) => {
@@ -87,13 +97,13 @@ module.exports = async function handler(req, res) {
             try {
                 // Blokir resource lagi untuk tab detail
                 await taskPage.route('**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2,ico}', route => route.abort());
-                await taskPage.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 8000 });
+                await taskPage.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 10000 });
                 
                 // Redirection check
                 const btn = await taskPage.$('a.btn-primary[href*="mod/"]');
                 if (btn) {
                     const activityLink = await btn.getAttribute('href');
-                    await taskPage.goto(activityLink, { waitUntil: 'domcontentloaded', timeout: 8000 });
+                    await taskPage.goto(activityLink, { waitUntil: 'domcontentloaded', timeout: 10 * 1000 });
                 }
 
                 const detail = await taskPage.evaluate(() => {
@@ -126,7 +136,10 @@ module.exports = async function handler(req, res) {
                     type: task.url.includes('assign') ? 'assignment' : (task.url.includes('quiz') ? 'quiz' : 'activity'),
                     scrapedAt: new Date().toISOString()
                 };
-            } catch (e) { return task; }
+            } catch (e) { 
+                console.warn(`⚠️ Error detail for ${task.title}:`, e.message);
+                return task; 
+            }
             finally { await taskPage.close(); }
         };
 
@@ -136,20 +149,14 @@ module.exports = async function handler(req, res) {
             results.push(...chunkResults);
         }
 
-        // 4. Persistence (Local file only if NOT on Vercel cloud)
-        if (!process.env.VERCEL) {
-            try {
-                const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
-                fs.writeFileSync(dataPath, JSON.stringify(results, null, 2));
-            } catch (e) {}
-        }
-
         await browser.close();
-        console.log(`✨ Selesai dalam ${(Date.now() - startTime)/1000} detik.`);
+        const duration = (Date.now() - startTime) / 1000;
+        console.log(`✨ Execution finished in ${duration}s.`);
         return res.status(200).json(results);
 
     } catch (error) {
+        console.error("❌ Fatal runtime error:", error);
         if (browser) await browser.close();
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message, stack: error.stack });
     }
 }
