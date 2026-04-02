@@ -497,19 +497,26 @@
             const courseContainer = document.getElementById('course-sidebar');
             if (!courseContainer) return;
 
-            // Ambil semua matkul unik
-            const uniqueCourses = Array.from(new Set(allData.map(i => i.course))).filter(c => c && c !== "GENERAL_ARCHIVE" && !c.includes('MBKM'));
-              courseContainer.innerHTML = uniqueCourses.map(courseFull => {
-                const parts = courseFull.split(' - ');
-                const code = parts.length > 1 ? parts[parts.length - 1] : courseFull;
+            const uniqueCourses = Array.from(new Set(allData.map(i => i.course)))
+                .filter(c => c && c !== "GENERAL_ARCHIVE" && !c.includes('MBKM'));
+            
+            courseContainer.innerHTML = uniqueCourses.map(courseFull => {
+                // Bersihkan [20252] di depan
+                let clean = courseFull.replace(/^\[\d+\]\s*/, '');
+                const parts = clean.split(' - ');
+                
+                // Nama Matkul (misal: RANGKAIAN LOGIKA DIGITAL)
+                const name = parts[0].trim();
+                // Kode (misal: A11.4404)
+                const code = parts.length > 1 ? parts[parts.length - 1].trim() : "";
 
                 return `
-                    <button onclick="filterByCourse(this.dataset.course, this)" data-course="${courseFull.replace(/"/g, '&quot;')}" class="nav-btn w-full flex items-center justify-between px-6 py-2.5 rounded-lg clip-corners-sm hover:bg-white/5 transition-all text-text-muted group">
-                        <div class="flex items-center gap-3">
-                            <i data-lucide="hash" class="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity"></i>
-                            <span class="text-[9px] font-bold tech-text leading-tight">${code}</span>
+                    <button onclick="filterByCourse(this.dataset.course, this)" data-course="${courseFull.replace(/"/g, '&quot;')}" class="nav-btn w-full flex flex-col items-start px-6 py-3 rounded-lg clip-corners-sm hover:bg-white/5 transition-all text-text-muted group">
+                        <span class="text-[9px] font-bold tech-text leading-tight group-hover:text-white transition-colors uppercase tracking-wider">${name}</span>
+                        <div class="flex items-center justify-between w-full mt-1">
+                            <span class="text-[8px] opacity-30 font-mono tracking-tighter">${code}</span>
+                            <span class="text-[8px] opacity-20 font-mono">${allData.filter(i => i.course === courseFull).length}</span>
                         </div>
-                        <span class="text-[9px] opacity-20 font-mono ml-2">${allData.filter(i => i.course === courseFull).length}</span>
                     </button>
                 `;
             }).join('');
