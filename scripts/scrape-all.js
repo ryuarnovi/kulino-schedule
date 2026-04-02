@@ -27,9 +27,14 @@ async function deepScrape() {
         await page.fill('#password', password);
         await Promise.all([ page.waitForURL('**/my/**', { timeout: 30000 }), page.click('#loginbtn') ]);
 
+        console.log('📂 Membuka daftar lengkap mata kuliah...');
+        await page.goto('https://kulino.dinus.ac.id/my/courses.php', { waitUntil: 'networkidle' });
+        await page.waitForTimeout(5000); // Tunggu render client-side
+
         const courses = await page.evaluate(() => {
             const list = [];
-            document.querySelectorAll('a[href*="course/view.php?id="]').forEach(a => {
+            const links = document.querySelectorAll('a[href*="course/view.php?id="]');
+            links.forEach(a => {
                 const url = a.href.split('&')[0];
                 const name = a.innerText.trim();
                 const isMBKM = name.toUpperCase().includes('MBKM');
@@ -40,7 +45,7 @@ async function deepScrape() {
             return list;
         });
 
-        console.log(`✅ Menemukan ${courses.length} mata kuliah non-MBKM.`);
+        console.log(`✅ Menemukan ${courses.length} mata kuliah.`);
         const finalResults = [];
 
         const scrapeCourse = async (course) => {
@@ -54,7 +59,6 @@ async function deepScrape() {
                     const elements = document.querySelectorAll(selectors);
                     
                     if (elements.length === 0) {
-                        // Tetap tambahkan agar kode matkul muncul di Dashboard
                         found.push({
                             id: 'empty-' + c.url.split('id=')[1],
                             title: 'NO_ACTIVE_TASKS_DETECTOR',
@@ -74,7 +78,7 @@ async function deepScrape() {
                             const isManualCheck = !!el.querySelector('img[src*="i/completion-manual-y"], img[src*="i/completion-auto-y"]');
 
                             found.push({
-                                id: url.split('id=')[1],
+                                id: url.split('id=')[1] || Math.random().toString(36).substr(2, 9),
                                 title, url,
                                 course: c.name,
                                 isSubmitted: isDone || isManualCheck,
@@ -96,7 +100,6 @@ async function deepScrape() {
             const chunkRes = await Promise.all(chunk.map(c => scrapeCourse(c)));
             chunkRes.forEach(r => finalResults.push(...r));
         }
-
 
         const dataFile = path.join(__dirname, '../public/deadlines.json');
         fs.mkdirSync(path.dirname(dataFile), { recursive: true });
