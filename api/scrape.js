@@ -35,77 +35,82 @@ module.exports = async function handler(req, res) {
         await context.route('**/*.{png,jpg,css,woff2}', route => route.abort());
         const page = await context.newPage();
 
-        // 1. LOGIN
-        console.log("🔑 Logging in...");
         await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'domcontentloaded' });
         await page.fill('#username', username);
         await page.fill('#password', password);
         await page.click('#loginbtn');
         await page.waitForURL('**/my/**', { timeout: 15000 });
 
-        // 2. GET COURSE LIST
-        console.log("📚 Getting course list...");
         const courses = await page.evaluate(() => {
             const list = [];
             document.querySelectorAll('a[href*="course/view.php?id="]').forEach(a => {
                 const url = a.href.split('&')[0];
                 const name = a.innerText.trim();
                 const isMBKM = name.toUpperCase().includes('MBKM');
-                
-                if (name && !list.some(c => c.url === url) && !name.includes('Summary') && !isMBKM) {
+                if (name && !list.some(c => c.url === url) && !name.includes('Summary') && !isMBKM && name.length > 5) {
                     list.push({ name, url });
                 }
             });
-            return list.slice(0, 10);
+            return list.slice(0, 15); // Ambil 15 matkul teratas
         });
 
-        const allTasksMap = new Map();
+        const allTasks = [];
 
-        // 3. DEEP CRAWL EACH COURSE
         const scrapeCourse = async (course) => {
             const cp = await context.newPage();
             try {
                 await cp.goto(course.url, { waitUntil: 'domcontentloaded', timeout: 15000 });
                 const tasks = await cp.evaluate((courseInfo) => {
                     const found = [];
-                    // Cari forum, assign, quiz
                     const selectors = '.activity.assign, .activity.quiz, .activity.forum, .activity.lti, .modtype_assign, .modtype_forum, .modtype_quiz';
-                    document.querySelectorAll(selectors).forEach(el => {
-                        const link = el.querySelector('a');
-                        if (!link) return;
-                        
-                        const title = link.innerText.replace('Assignment', '').replace('Forum', '').trim();
-                        const url = link.href;
-                        
-                        // Deteksi Centang Selesai (Moodle 4.x)
-                        const isDone = !!el.querySelector('.badge-success, [data-region="completion-toggle"].btn-success, .completion-auto-pass, [aria-label*="Done"], [aria-label*="Selesai"]');
-                        
+                    const elements = document.querySelectorAll(selectors);
+                    
+                    if (elements.length === 0) {
+                        // Jika kosong, masukkan placeholder agar kode matkul tetap muncul
                         found.push({
-                            id: url.split('id=')[1],
-                            title,
-                            url,
+                            id: 'empty-' + courseInfo.url.split('id=')[1],
+                            title: 'NO_ACTIVE_TASKS_FOUND',
+                            url: courseInfo.url,
                             course: courseInfo.name,
-                            isSubmitted: isDone,
-                            type: url.includes('forum') ? 'forum' : (url.includes('quiz') ? 'quiz' : 'assignment'),
+                            isSubmitted: true,
+                            type: 'placeholder',
                             scrapedAt: new Date().toISOString()
                         });
-                    });
+                    } else {
+                        elements.forEach(el => {
+                            const link = el.querySelector('a');
+                            if (!link) return;
+                            const title = link.innerText.replace('Assignment', '').replace('Forum', '').trim();
+                            const url = link.href;
+                            const isDone = !!el.querySelector('.badge-success, [data-region="completion-toggle"].btn-success, .completion-auto-pass, [aria-label*="Done"], [aria-label*="Selesai"], .completionbutton.btn-success');
+                            const isManualCheck = !!el.querySelector('img[src*="i/completion-manual-y"], img[src*="i/completion-auto-y"]');
+
+                            found.push({
+                                id: url.split('id=')[1],
+                                title, url,
+                                course: courseInfo.name,
+                                isSubmitted: isDone || isManualCheck,
+                                type: url.includes('forum') ? 'forum' : (url.includes('quiz') ? 'quiz' : 'assignment'),
+                                scrapedAt: new Date().toISOString()
+                            });
+                        });
+                    }
                     return found;
                 }, course);
-                tasks.forEach(t => allTasksMap.set(t.url, t));
-            } catch (e) { console.error(`Error scraping ${course.name}:`, e.message); }
+                allTasks.push(...tasks);
+            } catch (e) { 
+                // Tetap masukkan kursus meskipun gagal dibuka (error handling)
+                allTasks.push({ id: 'err-' + course.url.split('id=')[1], title: 'ACCESS_ERROR', course: course.name, isSubmitted: true, type: 'placeholder', url: course.url });
+            }
             finally { await cp.close(); }
         };
 
-        // Run in chunks of 3 courses
         for (let i = 0; i < courses.length; i += 3) {
             await Promise.all(courses.slice(i, i + 3).map(c => scrapeCourse(c)));
         }
 
         await browser.close();
-        const results = Array.from(allTasksMap.values());
-        console.log(`✨ Deep Scrape Success: ${results.length} tasks found.`);
-        return res.status(200).json(results);
+        return res.status(200).json(allTasks);
 
     } catch (error) { if (browser) await browser.close(); return res.status(500).json({ error: error.message }); }
 }

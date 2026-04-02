@@ -15,7 +15,7 @@ async function deepScrape() {
         process.exit(1);
     }
 
-    console.log('🚀 Memulai Deep Scraper (Course Crawler)...');
+    console.log('🚀 Memulai Deep Scraper (All Courses Mode)...');
 
     const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({ userAgent: 'Mozilla/5.0' });
@@ -27,15 +27,12 @@ async function deepScrape() {
         await page.fill('#password', password);
         await Promise.all([ page.waitForURL('**/my/**', { timeout: 30000 }), page.click('#loginbtn') ]);
 
-        console.log('📚 Mendeteksi mata kuliah di Dashboard...');
         const courses = await page.evaluate(() => {
             const list = [];
             document.querySelectorAll('a[href*="course/view.php?id="]').forEach(a => {
                 const url = a.href.split('&')[0];
                 const name = a.innerText.trim();
                 const isMBKM = name.toUpperCase().includes('MBKM');
-                
-                // Filter out non-course links like 'Summary' or 'Participants'
                 if (name && !list.some(c => c.url === url) && name.length > 5 && !name.includes('Summary') && !isMBKM) {
                     list.push({ name, url });
                 }
@@ -43,46 +40,54 @@ async function deepScrape() {
             return list;
         });
 
-        console.log(`✅ Menemukan ${courses.length} mata kuliah.`);
+        console.log(`✅ Menemukan ${courses.length} mata kuliah non-MBKM.`);
         const finalResults = [];
 
         const scrapeCourse = async (course) => {
             const cp = await context.newPage();
             try {
-                process.stdout.write(`🔍 Scraping: ${course.name.substring(0, 30)}... `);
+                process.stdout.write(`🔍 Checking: ${course.name.substring(0, 40)}... `);
                 await cp.goto(course.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
                 const tasks = await cp.evaluate((c) => {
                     const found = [];
-                    // Mencakup semua forum, tugas, kuis, aktivitas lti
                     const selectors = '.activity.assign, .activity.quiz, .activity.forum, .activity.lti, .modtype_assign, .modtype_forum, .modtype_quiz';
-                    document.querySelectorAll(selectors).forEach(el => {
-                        const link = el.querySelector('a');
-                        if (!link) return;
-                        
-                        const title = link.innerText.replace('Assignment', '').replace('Forum', '').trim();
-                        const url = link.href;
-                        
-                        // Deteksi Penyelesaian (Moodle 4+ dan Custom Kulino)
-                        const isDone = !!el.querySelector('.badge-success, [data-region="completion-toggle"].btn-success, .completion-auto-pass, [aria-label*="Done"], [aria-label*="Selesai"], .completionbutton.btn-success');
-                        
-                        // Cek apakah ada badge centang hijau manual
-                        const isManualCheck = !!el.querySelector('img[src*="i/completion-manual-y"], img[src*="i/completion-auto-y"]');
-
+                    const elements = document.querySelectorAll(selectors);
+                    
+                    if (elements.length === 0) {
+                        // Tetap tambahkan agar kode matkul muncul di Dashboard
                         found.push({
-                            id: url.split('id=')[1],
-                            title,
-                            url,
+                            id: 'empty-' + c.url.split('id=')[1],
+                            title: 'NO_ACTIVE_TASKS_DETECTOR',
+                            url: c.url,
                             course: c.name,
-                            isSubmitted: isDone || isManualCheck,
-                            type: url.includes('forum') ? 'forum' : (url.includes('quiz') ? 'quiz' : 'assignment'),
+                            isSubmitted: true,
+                            type: 'placeholder',
                             scrapedAt: new Date().toISOString()
                         });
-                    });
+                    } else {
+                        elements.forEach(el => {
+                            const link = el.querySelector('a');
+                            if (!link) return;
+                            const title = link.innerText.replace('Assignment', '').replace('Forum', '').trim();
+                            const url = link.href;
+                            const isDone = !!el.querySelector('.badge-success, [data-region="completion-toggle"].btn-success, .completion-auto-pass, [aria-label*="Done"], [aria-label*="Selesai"], .completionbutton.btn-success');
+                            const isManualCheck = !!el.querySelector('img[src*="i/completion-manual-y"], img[src*="i/completion-auto-y"]');
+
+                            found.push({
+                                id: url.split('id=')[1],
+                                title, url,
+                                course: c.name,
+                                isSubmitted: isDone || isManualCheck,
+                                type: url.includes('forum') ? 'forum' : (url.includes('quiz') ? 'quiz' : 'assignment'),
+                                scrapedAt: new Date().toISOString()
+                            });
+                        });
+                    }
                     return found;
                 }, course);
-                console.log(`[${tasks.length} tasks]`);
+                console.log(`[OK]`);
                 return tasks;
-            } catch (e) { console.log(`[FAILED: ${e.message}]`); return []; }
+            } catch (e) { return []; }
             finally { await cp.close(); }
         };
 
@@ -94,7 +99,7 @@ async function deepScrape() {
 
         const dataFile = path.join(__dirname, '../public/deadlines.json');
         fs.writeFileSync(dataFile, JSON.stringify(finalResults, null, 2));
-        console.log(`\n✨ Selesai! ${finalResults.length} total tasks disimpan.`);
+        console.log(`\n✨ Selesai! ${finalResults.length} entri disimpan.`);
 
     } catch (error) { console.error('❌ Error:', error); } finally { await browser.close(); }
 }
