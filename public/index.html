@@ -312,6 +312,14 @@
 
         async function init() {
             lucide.createIcons();
+            
+            // SECURITY CHECK: Redirect if no Dashboard PIN found
+            const pin = sessionStorage.getItem('d_pin');
+            if (!pin) {
+                window.location.href = '/login.html';
+                return;
+            }
+
             await loadData();
             startAutoSync();
         }
@@ -379,8 +387,14 @@
                         `;
                     }
 
-                    // 2. Background/Fresh Scrape
-                    const res = await fetch(`/api/scrape?force=${force}&t=${Date.now()}`);
+                    // 2. Background/Fresh Scrape (POST for security)
+                    const res = await fetch(`/api/scrape?force=${force}&t=${Date.now()}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            pin: sessionStorage.getItem('d_pin')
+                        })
+                    });
                     if (!res.ok) throw new Error('API_CONNECTION_ERROR');
                     const freshData = await res.json();
                     

@@ -20,9 +20,21 @@ module.exports = async function handler(req, res) {
         }
     } catch (e) {}
 
+    // 1. Verifikasi PIN Dashboard (Security Gate)
+    const pin = req.body?.pin || req.query.pin;
+    const correctPin = process.env.DASHBOARD_PIN || "21@062005";
+
+    if (pin !== correctPin) {
+        return res.status(401).json({ error: 'INVALID_DASHBOARD_PIN' });
+    }
+
+    // 2. Gunakan Kredensial Kulino dari ENV (Otomatis)
     const username = process.env.KULINO_USERNAME;
     const password = process.env.KULINO_PASSWORD;
-    if (!username || !password) return res.status(401).json({ error: 'Missing Credentials' });
+
+    if (!username || !password) {
+        return res.status(500).json({ error: 'SYSTEM_CONFIG_ERROR: KULINO_CREDENTIALS_MISSING' });
+    }
 
     let browser;
     try {
