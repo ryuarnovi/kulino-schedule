@@ -18,6 +18,7 @@ out/
 build/
 dist/
 .vercel/
+._*
 
 # OS/IDEs
 .DS_Store
