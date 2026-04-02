@@ -368,7 +368,7 @@
                     }
 
                     // 2. Background/Fresh Scrape
-                    const res = await fetch('/api/scrape?t=' + Date.now());
+                    const res = await fetch(`/api/scrape?force=${force}&t=${Date.now()}`);
                     if (!res.ok) throw new Error('API_CONNECTION_ERROR');
                     const freshData = await res.json();
                     
