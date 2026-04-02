@@ -1,34 +1,56 @@
 const { chromium } = require('playwright-core');
-const { chromium: chromiumExtra } = require('playwright-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const chromiumPack = require('@sparticuz/chromium');
 const path = require('path');
 const fs = require('fs');
 
-// Gunakan plugin stealth tapi kita bungkus secara manual
-const stealth = StealthPlugin();
-
 module.exports = async function handler(req, res) {
     const startTime = Date.now();
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    const isForce = req.query.force === 'true';
+
     console.log("🚀 Serverless function started...");
-    
-    // Set headers untuk mencegah cache
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    
+
+    // 1. Cek Caching 12 Jam
+    const dataPath = path.join(process.cwd(), 'public', 'deadlines.json');
+    let existingData = [];
+    let lastScrapeTime = 0;
+
+    try {
+        if (fs.existsSync(dataPath)) {
+            existingData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+            // Cari timestamp scrape terakhir dari data yang ada
+            if (existingData.length > 0) {
+                const latestScrape = existingData.reduce((max, task) => {
+                    const time = task.scrapedAt ? new Date(task.scrapedAt).getTime() : 0;
+                    return time > max ? time : max;
+                }, 0);
+                lastScrapeTime = latestScrape;
+            }
+        }
+    } catch (e) {
+        console.warn("⚠️ Gagal membaca cache:", e.message);
+    }
+
+    // Jika belum 12 jam dan tidak dipaksa force, kembalikan data lama
+    if (!isForce && (Date.now() - lastScrapeTime < TWELVE_HOURS_MS)) {
+        console.log(`♻️ Menggunakan cache (Terakhir scrape: ${new Date(lastScrapeTime).toLocaleString()})`);
+        return res.status(200).json({
+            status: "cached",
+            lastScrape: new Date(lastScrapeTime).toISOString(),
+            data: existingData
+        });
+    }
+
+    // 2. Jalankan Scraper (Hanya jika cache kadaluarsa)
     const username = process.env.KULINO_USERNAME;
     const password = process.env.KULINO_PASSWORD;
 
-    if (!username || !password) {
-        console.error("❌ Credentials missing!");
-        return res.status(401).json({ error: 'Missing Credentials' });
-    }
+    if (!username || !password) return res.status(401).json({ error: 'Missing Credentials' });
 
     let browser;
     try {
-        console.log("📦 Launching browser...");
-        
-        // --- LAUNCH BROWSER (VERCEL OPTIMIZED) ---
-        // Kita menggunakan playwright-core secara langsung agar lebih stabil di Vercel
+        console.log("🔑 Cache kadaluarsa atau Force, memulai login...");
         browser = await chromium.launch({
             args: [...chromiumPack.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--block-new-web-contents'],
             executablePath: await chromiumPack.executablePath(),
@@ -40,12 +62,9 @@ module.exports = async function handler(req, res) {
             viewport: { width: 1280, height: 800 }
         });
         
-        // Blokir resource berat (gambar/font) untuk menghemat waktu & bandwidth Vercel
         await context.route('**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2,ico}', route => route.abort());
         const page = await context.newPage();
 
-        // 1. LOGIN
-        console.log("🔑 Logging in to Kulino...");
         await page.goto('https://kulino.dinus.ac.id/login/index.php', { waitUntil: 'domcontentloaded', timeout: 15000 });
         await page.fill('#username', username);
         await page.fill('#password', password);
@@ -54,13 +73,7 @@ module.exports = async function handler(req, res) {
             page.click('#loginbtn'),
         ]);
 
-        const userDisplayName = await page.evaluate(() => {
-            return document.querySelector('.userbutton .usertext')?.textContent?.trim() || '';
-        });
-        console.log(`👤 Logged in as: ${userDisplayName}`);
-
-        // 2. SCRAPE CALENDAR LIST
-        console.log("📅 Fetching calendar events...");
+        // ... (Logika scraping tetap sama dengan versi paralel yang sudah dioptimasi) ...
         const currentMonthUrl = `https://kulino.dinus.ac.id/calendar/view.php?view=month`;
         await page.goto(currentMonthUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
         
@@ -68,14 +81,11 @@ module.exports = async function handler(req, res) {
             const results = [];
             const filter = ['tugas', 'praktikum', 'pratikum', 'assign', 'kuis', 'quiz', 'praktek', 'ujian', 'repositori', 'repository', 'proyek', 'project', 'forum', 'kegiatan', 'mahasiswa', 'student', 'activity', 'survey', 'kuesioner'];
             const events = Array.from(document.querySelectorAll('a[data-action="view-event"]'));
-            
             events.forEach(ev => {
                 const rawTitle = ev.getAttribute('title') || '';
                 const url = ev.href;
                 const title = rawTitle.replace(/\s+is\s+due$/i, '').replace(/\s+opens$/i, '').trim();
-                const isValid = filter.some(f => title.toLowerCase().includes(f)) || url.includes('assign') || url.includes('quiz');
-                
-                if (isValid) {
+                if (filter.some(f => title.toLowerCase().includes(f)) || url.includes('assign') || url.includes('quiz')) {
                     const dayCell = ev.closest('td.day');
                     results.push({
                         id: ev.getAttribute('data-event-id'),
@@ -87,30 +97,22 @@ module.exports = async function handler(req, res) {
             return results;
         });
 
-        // 3. PARALLEL INSPECTION (Batas 3 tab untuk Vercel agar tidak melebihi RAM/CPU limit)
-        console.log(`🚀 Parallel processing ${tasksToScrape.length} tasks...`);
         const CONCURRENCY_LIMIT = 3; 
         const results = [];
 
         const scrapeTask = async (task) => {
             const taskPage = await context.newPage();
             try {
-                // Blokir resource lagi untuk tab detail
                 await taskPage.route('**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2,ico}', route => route.abort());
                 await taskPage.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 10000 });
-                
-                // Redirection check
                 const btn = await taskPage.$('a.btn-primary[href*="mod/"]');
                 if (btn) {
                     const activityLink = await btn.getAttribute('href');
-                    await taskPage.goto(activityLink, { waitUntil: 'domcontentloaded', timeout: 10 * 1000 });
+                    await taskPage.goto(activityLink, { waitUntil: 'domcontentloaded', timeout: 8000 });
                 }
 
                 const detail = await taskPage.evaluate(() => {
-                    let deadline = '';
-                    let isSubmitted = false;
-                    let courseName = '';
-                    let description = document.querySelector('#intro .no-overflow')?.textContent?.trim() || '';
+                    let deadline = '', isSubmitted = false, courseName = '', description = document.querySelector('#intro .no-overflow')?.textContent?.trim() || '';
                     const bread = document.querySelectorAll('.breadcrumb-item a');
                     if (bread.length >= 3) courseName = bread[2].innerText.trim();
                     const dateDivs = document.querySelectorAll('[data-region="activity-dates"] > div');
@@ -120,8 +122,7 @@ module.exports = async function handler(req, res) {
                     });
                     const rows = document.querySelectorAll('.submissionstatustable tr');
                     rows.forEach(row => {
-                        const th = row.querySelector('th')?.innerText.toLowerCase() || '';
-                        const td = row.querySelector('td')?.innerText.toLowerCase() || '';
+                        const th = row.querySelector('th')?.innerText.toLowerCase() || '', td = row.querySelector('td')?.innerText.toLowerCase() || '';
                         if (th.includes('status') && (td.includes('submitted') || td.includes('dikumpulkan'))) isSubmitted = true;
                     });
                     return { description, isSubmitted, deadline, courseName };
@@ -136,10 +137,7 @@ module.exports = async function handler(req, res) {
                     type: task.url.includes('assign') ? 'assignment' : (task.url.includes('quiz') ? 'quiz' : 'activity'),
                     scrapedAt: new Date().toISOString()
                 };
-            } catch (e) { 
-                console.warn(`⚠️ Error detail for ${task.title}:`, e.message);
-                return task; 
-            }
+            } catch (e) { return task; }
             finally { await taskPage.close(); }
         };
 
@@ -150,13 +148,11 @@ module.exports = async function handler(req, res) {
         }
 
         await browser.close();
-        const duration = (Date.now() - startTime) / 1000;
-        console.log(`✨ Execution finished in ${duration}s.`);
+        console.log(`✨ Scrape selesai dalam ${(Date.now() - startTime)/1000}s.`);
         return res.status(200).json(results);
 
     } catch (error) {
-        console.error("❌ Fatal runtime error:", error);
         if (browser) await browser.close();
-        return res.status(500).json({ error: error.message, stack: error.stack });
+        return res.status(500).json({ error: error.message });
     }
 }
