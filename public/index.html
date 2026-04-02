@@ -241,7 +241,7 @@
                         <i data-lucide="refresh-cw" class="h-3 w-3" id="sync-icon"></i>
                         <span id="sync-text">SYNC_DATABASE</span>
                     </button>
-                    <div id="sync-timer" class="mt-4 text-[8px] tech-text opacity-30 text-center">NEXT_AUTO_SYNC: 12:00:00</div>
+                    <div id="sync-timer" class="mt-4 text-[8px] tech-text opacity-30 text-center">NEXT_AUTO_SYNC: 04:00:00</div>
                 </div>
             </div>
         </aside>
@@ -305,7 +305,7 @@
     <script>
         let allData = [];
         let filteredData = [];
-        let syncCountdown = 43200; // 12 hours in seconds
+        let syncCountdown = 14400; // 4 hours in seconds
         let manualArchives = JSON.parse(localStorage.getItem('manualArchives') || '[]');
 
         let isLoadingData = false;
@@ -321,7 +321,7 @@
                 syncCountdown--;
                 if (syncCountdown <= 0) {
                     loadData(true);
-                    syncCountdown = 43200; // Reset to 12 hours
+                    syncCountdown = 14400; // Reset to 4 hours
                 }
                 updateSyncTimer();
             }, 1000);
@@ -446,7 +446,7 @@
                     
                     updateStats();
                     renderGrid();
-                    syncCountdown = 43200; // Reset to 12 hours
+                    syncCountdown = 14400; // Reset to 4 hours
                 }
             } catch (e) {
                 console.error('LIVE_SYNC_FAILED:', e);
@@ -499,19 +499,20 @@
 
             // Ambil semua matkul unik
             const uniqueCourses = Array.from(new Set(allData.map(i => i.course))).filter(c => c && c !== "GENERAL_ARCHIVE" && !c.includes('MBKM'));
-            
-            courseContainer.innerHTML = uniqueCourses.map(courseFull => {
-                // Ekstrak kode kelompok (biasanya setelah tanda - )
+              courseContainer.innerHTML = uniqueCourses.map(courseFull => {
                 const parts = courseFull.split(' - ');
                 const code = parts.length > 1 ? parts[parts.length - 1] : courseFull;
 
+                // Gunakan encodeURIComponent untuk keamanan data-attribute
+                const safeCourse = encodeURIComponent(courseFull);
+
                 return `
-                    <button onclick="filterByCourse('${courseFull}')" class="nav-btn w-full flex items-center justify-between px-6 py-2.5 rounded-lg clip-corners-sm hover:bg-white/5 transition-all text-text-muted group">
-                        <div class="flex items-center gap-3 overflow-hidden">
+                    <button onclick="filterByCourse(decodeURIComponent('${safeCourse}'))" class="nav-btn w-full flex items-center justify-between px-6 py-2.5 rounded-lg clip-corners-sm hover:bg-white/5 transition-all text-text-muted group">
+                        <div class="flex items-center gap-3">
                             <i data-lucide="hash" class="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity"></i>
-                            <span class="text-[10px] font-bold tech-text truncate">${code}</span>
+                            <span class="text-[9px] font-bold tech-text leading-tight">${code}</span>
                         </div>
-                        <span class="text-[9px] opacity-20 font-mono">${allData.filter(i => i.course === courseFull).length}</span>
+                        <span class="text-[9px] opacity-20 font-mono ml-2">${allData.filter(i => i.course === courseFull).length}</span>
                     </button>
                 `;
             }).join('');
