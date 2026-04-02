@@ -90,10 +90,31 @@
             btn.style.opacity = "0.5";
 
             const pin = document.getElementById('d-pin').value;
-            sessionStorage.setItem('d_pin', pin);
+            try {
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin })
+                });
 
-            status.innerText = "ACCESS_GRANTED_DECRYPTING...";
-            setTimeout(() => { window.location.href = "/"; }, 500);
+                if (res.ok) {
+                    sessionStorage.setItem('d_pin', pin);
+                    status.innerText = "ACCESS_GRANTED_DECRYPTING...";
+                    setTimeout(() => { window.location.href = "/"; }, 500);
+                } else {
+                    throw new Error("INVALID_PIN");
+                }
+            } catch (err) {
+                status.innerText = "ACCESS_DENIED_INVALID_PIN";
+                status.classList.add('text-rose-500');
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                setTimeout(() => {
+                    status.classList.remove('text-rose-500');
+                    status.innerText = "VALIDATING_ACCESS_LINK...";
+                    status.style.opacity = "0";
+                }, 2000);
+            }
         };
     </script>
 </body>

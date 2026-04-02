@@ -20,11 +20,11 @@ module.exports = async function handler(req, res) {
         }
     } catch (e) {}
 
-    // 1. Verifikasi PIN Dashboard (Security Gate)
+    // 1. Verifikasi PIN Dashboard (Hanya lewat ENV untuk Keamanan)
     const pin = req.body?.pin || req.query.pin;
-    const correctPin = process.env.DASHBOARD_PIN || "21@062005";
+    const correctPin = process.env.DASHBOARD_PIN;
 
-    if (pin !== correctPin) {
+    if (!pin || pin !== correctPin) {
         return res.status(401).json({ error: 'INVALID_DASHBOARD_PIN' });
     }
 
