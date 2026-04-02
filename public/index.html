@@ -218,6 +218,17 @@
                     <i data-lucide="check-square" class="h-4 w-4 group-hover:text-emerald-500"></i>
                     <span class="text-xs font-bold tech-text">COMPLETED</span>
                 </button>
+
+                <div class="pt-6 pb-2">
+                    <div class="px-6 flex items-center gap-3 mb-4">
+                        <div class="h-px w-4 bg-white/10"></div>
+                        <span class="tech-text text-[8px] opacity-30 font-bold uppercase tracking-[.2em]">COURSE_CHANNELS</span>
+                    </div>
+                </div>
+
+                <div id="course-sidebar" class="space-y-1">
+                    <!-- Dynamic courses will be injected here -->
+                </div>
             </nav>
 
             <div class="p-6">
@@ -478,6 +489,43 @@
             if (statUrgent) statUrgent.innerText = urgentCount;
             if (statDone) statDone.innerText = doneCount;
             if (lastUpdate) lastUpdate.innerText = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+            
+            updateCourseSidebar();
+        }
+
+        function updateCourseSidebar() {
+            const courseContainer = document.getElementById('course-sidebar');
+            if (!courseContainer) return;
+
+            // Ambil semua matkul unik
+            const uniqueCourses = Array.from(new Set(allData.map(i => i.course))).filter(c => c && c !== "GENERAL_ARCHIVE" && !c.includes('MBKM'));
+            
+            courseContainer.innerHTML = uniqueCourses.map(courseFull => {
+                // Ekstrak kode kelompok (biasanya setelah tanda - )
+                const parts = courseFull.split(' - ');
+                const code = parts.length > 1 ? parts[parts.length - 1] : courseFull;
+
+                return `
+                    <button onclick="filterByCourse('${courseFull}')" class="nav-btn w-full flex items-center justify-between px-6 py-2.5 rounded-lg clip-corners-sm hover:bg-white/5 transition-all text-text-muted group">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <i data-lucide="hash" class="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity"></i>
+                            <span class="text-[10px] font-bold tech-text truncate">${code}</span>
+                        </div>
+                        <span class="text-[9px] opacity-20 font-mono">${allData.filter(i => i.course === courseFull).length}</span>
+                    </button>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        function filterByCourse(courseName) {
+            const btns = document.querySelectorAll('.nav-btn');
+            btns.forEach(b => b.classList.remove('sidebar-active'));
+            event.currentTarget.classList.add('sidebar-active');
+
+            filteredData = allData.filter(i => i.course === courseName);
+            renderGrid();
         }
 
         function renderGrid() {
