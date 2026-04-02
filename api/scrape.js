@@ -128,12 +128,14 @@ module.exports = async function handler(req, res) {
 
                     // --- DETEKSI: Mark as Done / Completion Status ---
                     if (!isSubmitted) {
-                        const completionBtn = document.querySelector('[data-region="completion-toggle"]');
+                        const completionBtn = document.querySelector('[data-region="completion-toggle"], .completion-dialog-button, .btn-outline-success, .btn-success');
                         if (completionBtn && (completionBtn.innerText.toLowerCase().includes('done') || completionBtn.innerText.toLowerCase().includes('selesai'))) {
                             isSubmitted = true;
                         }
-                        const doneLabel = document.querySelector('.completioninfo .badge-success, .automatic-completion-conditions [aria-label*="Done"]');
-                        if (doneLabel) isSubmitted = true;
+                        const doneLabel = document.querySelector('.completioninfo .badge-success, .automatic-completion-conditions [aria-label*="Done"], .badge-success');
+                        if (doneLabel && (doneLabel.innerText.toLowerCase().includes('done') || doneLabel.innerText.toLowerCase().includes('selesai'))) {
+                            isSubmitted = true;
+                        }
                         if (document.querySelector('img[src*="i/completion-manual-y"], img[src*="i/completion-auto-y"]')) isSubmitted = true;
                     }
 
