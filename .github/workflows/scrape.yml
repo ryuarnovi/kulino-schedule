@@ -26,7 +26,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Scraper
-        run: node scripts/scrape-all.js
+        run: node --no-deprecation scripts/scrape-all.js
         env:
           KULINO_USERNAME: ${{ secrets.KULINO_USERNAME }}
           KULINO_PASSWORD: ${{ secrets.KULINO_PASSWORD }}
