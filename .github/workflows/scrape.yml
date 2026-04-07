@@ -32,6 +32,7 @@ jobs:
           KULINO_PASSWORD: ${{ secrets.KULINO_PASSWORD }}
 
       - name: Commit & Push
+        if: github.event_name == 'schedule'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
