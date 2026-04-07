@@ -20,7 +20,7 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci || npm install
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -37,5 +37,6 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add public/deadlines.json
           git commit -m "chore: auto-sync kulino deadlines [skip ci]" || echo "No changes"
-          git pull --rebase origin main
+          git checkout package-lock.json
+          git pull --rebase --autostash origin main
           git push origin main
