@@ -3,6 +3,13 @@ const chromiumPack = require('@sparticuz/chromium');
 const path = require('path');
 const fs = require('fs');
 
+// Suppress DEP0169: url.parse() deprecation warning from dependencies in Vercel logs
+process.off('warning', process.listeners('warning')[0]); // Optional: clear existing if needed
+process.on('warning', (warning) => {
+    if (warning.name === 'DeprecationWarning' && warning.code === 'DEP0169') return;
+    console.warn(warning);
+});
+
 module.exports = async function handler(req, res) {
     const isForce = req.query.force === 'true';
     const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
